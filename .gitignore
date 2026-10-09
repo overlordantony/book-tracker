@@ -4,4 +4,4 @@ node_modules/
 *.log
 # Si prefieres NO subir tu configuración de Firebase al repositorio, descomenta la
 # siguiente línea y usa el despliegue con GitHub Actions (ver docs/FIREBASE.md §8):
-# js/firebase-config.js
+js/firebase-config.js
