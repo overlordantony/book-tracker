@@ -70,16 +70,7 @@ Aplicación web para llevar el registro personal de lo que lees: biblioteca con 
 1. **Clona o descarga** el repositorio.
 2. **Crea y configura Firebase** siguiendo **[docs/FIREBASE.md](docs/FIREBASE.md)** (proyecto, Authentication, Firestore, reglas y primer administrador).
 3. **Configura la conexión**: copia `js/firebase-config.example.js` a `js/firebase-config.js` y pega los valores de tu app web de Firebase.
-4. **Ejecútalo en local** con cualquier servidor estático (los módulos ES no funcionan abriendo el archivo con `file://`):
-
-   ```bash
-   # con Python
-   python3 -m http.server 8000
-   # o con Node
-   npx serve .
-   ```
-
-   Abre `http://localhost:8000`.
+4. **Ejecútalo en local** con cualquier liveserver de VS Code
 5. **Publícalo** en GitHub Pages (ver [docs/FIREBASE.md §8](docs/FIREBASE.md#8-publicar-en-github-pages)).
 
 ## Cómo se usa
