@@ -1,5 +1,4 @@
-// Copia este archivo como js/firebase-config.js y rellena tus valores.
-// Los encuentras en: Firebase Console → Configuración del proyecto
+// Reemplaza esto con el firebaseConfig que copiaste de la consola (pestaña CDN)
 export const firebaseConfig = {
     apiKey: "AIzaSyBFSITP4biT1KzHmczugw2o2ahPoJtQwaM",
     authDomain: "book-tracker-overlordowl.firebaseapp.com",
