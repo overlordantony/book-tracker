@@ -1,0 +1,765 @@
+/* === Tokens ===
+   Paleta moderna con modo oscuro por defecto y modo claro opcional.
+   Acento índigo/azul vivo en vez del típico terracota genérico. */
+:root{
+  --radio: 10px;
+  --radio-sm: 6px;
+  --sombra: 0 8px 24px rgba(0,0,0,.28);
+  --alto-barra: 64px;   /* alto del header fijo */
+  --alto-pie: 52px;     /* alto del footer fijo (en móvil cambia, ver media query) */
+  --ancho-contenido: 820px;
+}
+
+:root[data-theme="dark"]{
+  --bg: #12151a;
+  --superficie: #1b1f27;
+  --superficie-2: #232834;
+  --texto: #e7eaf0;
+  --muted: #8992a3;
+  --linea: #2b303c;
+  --accent: #5b8def;
+  --accent-suave: rgba(91,141,239,.16);
+  --accent-hover: #78a3f3;
+  --verde: #3bb582;
+  --verde-suave: rgba(59,181,130,.16);
+  --vino: #e2574c;
+  --vino-suave: rgba(226,87,76,.16);
+  --oro: #e8b339;
+}
+
+:root[data-theme="light"]{
+  --bg: #f4f6fa;
+  --superficie: #ffffff;
+  --superficie-2: #edf0f6;
+  --texto: #161a20;
+  --muted: #677086;
+  --linea: #dde1e9;
+  --accent: #3f6fd1;
+  --accent-suave: rgba(63,111,209,.10);
+  --accent-hover: #2f5bb8;
+  --verde: #1f8f63;
+  --verde-suave: rgba(31,143,99,.10);
+  --vino: #c43d33;
+  --vino-suave: rgba(196,61,51,.10);
+  --oro: #b5791a;
+}
+
+*{ box-sizing: border-box; }
+
+/* El atributo hidden debe ganar siempre, sin importar qué display
+   defina después cualquier otra clase sobre el mismo elemento. */
+[hidden]{ display: none !important; }
+
+body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--texto);
+  font-family: "Inter", system-ui, sans-serif;
+  line-height: 1.5;
+  transition: background .15s ease, color .15s ease;
+}
+
+.num{ font-family: "IBM Plex Mono", monospace; }
+
+h1, h2, h3{ font-weight: 700; margin: 0; letter-spacing: -.01em; }
+
+.boton-tema{
+  font-family: inherit;
+  font-size: .82rem;
+  background: var(--superficie-2);
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  padding: .4rem .9rem;
+  color: var(--texto);
+  cursor: pointer;
+}
+.boton-tema:hover{ border-color: var(--accent); }
+
+/* --- Login --- */
+.pagina-login{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.5rem calc(var(--alto-pie) + 1.5rem + env(safe-area-inset-bottom, 0px));
+  position: relative;
+}
+
+.pagina-login .boton-tema{ position: absolute; top: 1.4rem; right: 1.4rem; }
+
+.tarjeta-login{
+  width: 100%;
+  max-width: 380px;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 2.4rem 2rem;
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-login h1{
+  font-size: 1.5rem;
+  margin-bottom: .3rem;
+}
+
+.tarjeta-login .sub{
+  color: var(--muted);
+  font-size: .88rem;
+  margin: 0 0 1.6rem;
+}
+
+.tarjeta-login form{
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+
+.tarjeta-login label{
+  font-size: .82rem;
+  color: var(--muted);
+  margin-top: .7rem;
+}
+
+input, select, textarea{
+  font-family: inherit;
+  font-size: 1rem;
+  padding: .6rem .7rem;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-sm);
+  background: var(--superficie-2);
+  color: var(--texto);
+}
+
+input:focus, select:focus, textarea:focus{
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.tarjeta-login input{ margin-top: .25rem; }
+
+button[type="submit"], .boton-principal{
+  font-family: inherit;
+  font-size: .96rem;
+  font-weight: 600;
+  padding: .7rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+}
+button[type="submit"]:hover, .boton-principal:hover{ background: var(--accent-hover); }
+
+.tarjeta-login button[type="submit"]{ margin-top: 1.4rem; }
+
+.error{
+  color: var(--vino);
+  background: var(--vino-suave);
+  border-radius: var(--radio-sm);
+  padding: .5rem .6rem;
+  font-size: .85rem;
+  margin: .6rem 0 0;
+}
+
+/* --- App shell --- */
+.pagina-app{
+  margin: 0;
+  /* espacio para que el footer fijo no tape el final de la página */
+  padding: 0 0 calc(var(--alto-pie) + 2rem + env(safe-area-inset-bottom, 0px));
+}
+/* Todo lo que no sea header/footer se centra en una columna de 820px */
+.pagina-app > :not(.barra):not(.pie-fijo):not(.modal):not(script){
+  width: 100%;
+  max-width: var(--ancho-contenido);
+  margin-inline: auto;
+  padding-inline: 1.2rem;
+}
+
+/* Header fijo: ancho completo, fondo con degradado, borde de acento y sombra.
+   Su contenido se alinea con la columna de 820px mediante padding-inline. */
+.barra{
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  min-height: var(--alto-barra);
+  padding: .5rem max(1.2rem, calc((100% - var(--ancho-contenido)) / 2 + 1.2rem));
+  background: linear-gradient(135deg, var(--superficie) 0%, var(--superficie-2) 100%);
+  border-bottom: 2px solid var(--accent);
+  box-shadow: 0 6px 20px rgba(0,0,0,.30);
+}
+
+.barra h1{
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  /* hasta 2 líneas en móvil antes de recortar, para que el título siga legible */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.barra .acciones{ display: flex; gap: .5rem; align-items: center; flex-shrink: 0; }
+
+/* Logo (imagen de /icons/). El icono tiene mucho margen oscuro: se amplía y recorta
+   para que el libro se vea grande aun a 40px. */
+.logo-enlace{
+  flex-shrink: 0;
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #12151a;
+  box-shadow: 0 0 0 1px var(--linea), 0 2px 8px rgba(0,0,0,.35);
+}
+.logo{ display: block; width: 100%; height: 100%; transform: scale(1.85); }
+
+.boton-fantasma{
+  font-family: inherit;
+  font-size: .85rem;
+  background: none;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  padding: .4rem .9rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+.boton-fantasma:hover{ border-color: var(--accent); color: var(--texto); }
+
+.pestañas{
+  display: flex;
+  gap: .4rem;
+  background: var(--superficie-2);
+  border-radius: 999px;
+  padding: .3rem;
+  width: fit-content;
+}
+
+.pestaña{
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  padding: .5rem 1.1rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.pestaña.activa{ color: #fff; background: var(--accent); }
+
+.vista{ padding-top: 1.6rem; }
+
+.vacio{ color: var(--muted); padding: 2rem 0; text-align: center; }
+
+/* --- Formulario --- */
+.formulario fieldset{
+  border: none;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 1.1rem 1.2rem 1.3rem;
+  margin: 0 0 1rem;
+}
+
+.formulario legend{
+  font-size: .76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--accent);
+  padding: 0 .4rem;
+}
+
+.formulario label{
+  display: block;
+  font-size: .82rem;
+  color: var(--muted);
+  margin-top: .85rem;
+}
+
+.formulario input,
+.formulario select,
+.formulario textarea{
+  width: 100%;
+  margin-top: .3rem;
+}
+
+.formulario textarea{ resize: vertical; }
+
+.formulario .fila{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.formulario button[type="submit"]{ width: 100%; margin-top: .4rem; }
+
+/* --- Listado de biblioteca --- */
+.lista-libros{ display: flex; flex-direction: column; gap: .6rem; }
+
+.fila-libro{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-left: 3px solid var(--linea);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition: border-color .12s ease;
+}
+.fila-libro:hover{ border-color: var(--accent); }
+
+.fila-libro.estado-leyendo{ border-left-color: var(--accent); }
+.fila-libro.estado-terminado{ border-left-color: var(--verde); }
+.fila-libro.estado-pausado{ border-left-color: var(--oro); }
+.fila-libro.estado-descartado{ border-left-color: var(--vino); }
+
+.fila-libro h3{ font-size: 1.02rem; }
+.fila-libro .autor{ margin: .2rem 0 0; color: var(--muted); font-size: .88rem; }
+.fila-libro .generos{ margin: .3rem 0 0; font-size: .76rem; color: var(--accent); }
+
+.fila-libro-datos{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .35rem;
+  flex-shrink: 0;
+}
+
+.etiqueta-estado{
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--muted);
+  background: var(--superficie-2);
+  padding: .2rem .55rem;
+  border-radius: 999px;
+}
+
+.progreso{ font-size: .85rem; color: var(--texto); }
+
+/* --- Detalle de libro --- */
+.cabecera-detalle{
+  padding: 1.6rem 0 1rem;
+  border-bottom: 1px solid var(--linea);
+  margin-bottom: 1.4rem;
+}
+
+.cabecera-detalle .volver{
+  font-size: .82rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+.cabecera-detalle .volver:hover{ color: var(--accent); }
+
+.cabecera-detalle h2{ font-size: 1.4rem; margin-top: .5rem; }
+.cabecera-detalle .autor{ color: var(--muted); margin-top: .2rem; }
+
+.barra-progreso{
+  margin-top: .9rem;
+  height: 6px;
+  background: var(--superficie-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.barra-progreso-relleno{
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.subpestañas{
+  display: flex;
+  gap: .4rem;
+  background: var(--superficie-2);
+  border-radius: 999px;
+  padding: .3rem;
+  width: fit-content;
+  margin-bottom: 1.3rem;
+}
+
+.item-sub{
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: .85rem 1rem;
+  margin-bottom: .6rem;
+}
+
+.item-sub-cabecera{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .6rem;
+}
+
+.item-sub h4{ font-size: .95rem; margin: 0; }
+.item-sub .meta{ font-size: .75rem; color: var(--muted); }
+.item-sub p{ margin: .4rem 0 0; font-size: .88rem; color: var(--texto); }
+.item-sub .puntos{ margin: .5rem 0 0; padding-left: 1.1rem; font-size: .86rem; }
+.item-sub .puntos li{ margin-bottom: .25rem; }
+
+.chip{
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 600;
+  padding: .15rem .55rem;
+  border-radius: 999px;
+  background: var(--accent-suave);
+  color: var(--accent);
+}
+.chip.favorita{ background: var(--oro); color: #1b1304; }
+
+.formulario-mini{
+  display: grid;
+  gap: .55rem;
+  background: var(--superficie);
+  border: 1px dashed var(--linea);
+  border-radius: var(--radio);
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.formulario-mini .fila{ display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.formulario-mini button{ justify-self: start; }
+
+@media(max-width: 640px){
+  .formulario .fila, .formulario-mini .fila{ grid-template-columns: 1fr; }
+}
+
+/* ===================================================================
+   Biblioteca ampliada: herramientas, portadas, estadísticas, citas.
+   Pensado primero para móvil; en pantallas grandes solo se ensancha.
+   =================================================================== */
+
+input[type="search"]{ -webkit-appearance: none; appearance: none; }
+
+/* (La cabecera ahora es fija; su comportamiento en móvil está en el bloque "Header, footer y modal" al final.) */
+
+/* Pestañas: con 4 ya no caben en un teléfono, así que se desplazan */
+.pestañas, .subpestañas{
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pestañas::-webkit-scrollbar, .subpestañas::-webkit-scrollbar{ display: none; }
+.pestaña{ white-space: nowrap; flex-shrink: 0; }
+
+/* Herramientas de búsqueda / filtro */
+.barra-herramientas{ display: flex; flex-direction: column; gap: .7rem; margin-bottom: 1.2rem; }
+.barra-herramientas input[type="search"]{ width: 100%; }
+.filtros{ display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.filtros select{ flex: 1 1 150px; min-width: 0; }
+.filtros .check{ display: flex; align-items: center; gap: .4rem; font-size: .88rem; color: var(--muted); }
+.filtros .check input{ width: auto; }
+.resumen-filtro{
+  display: flex; justify-content: space-between; align-items: center;
+  gap: .6rem; font-size: .82rem; color: var(--muted);
+}
+
+/* Filas de la biblioteca con portada (solo en la lista de libros;
+   las filas del panel de administración siguen siendo flex) */
+.lista-libros .fila-libro{
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .9rem;
+}
+.lista-libros .fila-libro-principal{ min-width: 0; }
+.lista-libros .fila-libro h3{ overflow-wrap: anywhere; }
+
+.portada-mini{
+  width: 48px;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--superficie-2);
+  border: 1px solid var(--linea);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-weight: 700;
+  flex-shrink: 0;
+}
+.portada-mini img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.calificacion{ font-size: .8rem; color: var(--oro); }
+
+/* Cabecera del detalle con portada grande */
+.cabecera-detalle-cuerpo{ display: flex; gap: 1rem; align-items: flex-start; margin-top: .6rem; }
+.cabecera-detalle-cuerpo > div{ min-width: 0; flex: 1; }
+.portada-grande{
+  width: 110px;
+  max-width: 30%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--linea);
+  background: var(--superficie-2);
+  flex-shrink: 0;
+}
+.acciones-libro{ display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+
+/* Estadísticas */
+.tiles{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .7rem; }
+.tile{
+  background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio);
+  padding: .9rem 1rem; display: flex; flex-direction: column; gap: .2rem;
+}
+.tile-valor{ font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+.tile-etiqueta{ font-size: .78rem; color: var(--muted); }
+.titulo-seccion{
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--muted); margin: 1.6rem 0 .7rem;
+}
+.barras-mes{
+  display: grid; grid-template-columns: repeat(var(--cols, 12), minmax(0, 1fr)); gap: .3rem; align-items: stretch;
+  height: 140px; background: var(--superficie); border: 1px solid var(--linea);
+  border-radius: var(--radio); padding: .7rem .6rem .5rem;
+}
+.barra-mes{ display: flex; flex-direction: column; align-items: center; gap: .2rem; min-width: 0; }
+.barra-mes-n{ font-size: .7rem; color: var(--muted); height: 1em; line-height: 1; }
+.barra-mes-col{
+  flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center;
+  border-bottom: 1px solid var(--linea);
+}
+.barra-mes-relleno{ width: 70%; background: var(--accent); border-radius: 3px 3px 0 0; }
+.barra-mes-etq{ font-size: .68rem; color: var(--muted); }
+
+.estado-fila{
+  display: grid; grid-template-columns: 90px 1fr 28px; gap: .6rem;
+  align-items: center; font-size: .85rem; margin-bottom: .45rem;
+}
+.estado-fila .num{ text-align: right; }
+.estado-barra{ height: 8px; background: var(--superficie-2); border-radius: 999px; overflow: hidden; }
+.estado-barra-relleno{ height: 100%; border-radius: 999px; background: var(--linea); }
+.estado-barra-relleno.estado-leyendo{ background: var(--accent); }
+.estado-barra-relleno.estado-terminado{ background: var(--verde); }
+.estado-barra-relleno.estado-pausado{ background: var(--oro); }
+.estado-barra-relleno.estado-descartado{ background: var(--vino); }
+.estado-barra-relleno.estado-pendiente{ background: var(--muted); }
+
+.leyendo-item{
+  background: var(--superficie); border: 1px solid var(--linea);
+  border-radius: var(--radio); padding: .8rem 1rem; margin-bottom: .5rem;
+}
+.leyendo-cabecera{ display: flex; justify-content: space-between; gap: .6rem; flex-wrap: wrap; font-size: .9rem; }
+.leyendo-cabecera .num{ font-size: .8rem; color: var(--muted); }
+.leyendo-item .barra-progreso{ margin-top: .5rem; }
+
+/* Citas de todos los libros */
+.cita-global{ border-left: 3px solid var(--accent); }
+.cita-global.es-favorita{ border-left-color: var(--oro); }
+.item-sub .cita-texto{ font-size: 1rem; margin: 0 0 .4rem; }
+.item-sub .meta{ margin: .3rem 0 0; }
+.enlace-libro{ color: var(--accent); text-decoration: none; }
+.cita-global .btn-copiar{ margin-top: .6rem; }
+
+/* ---------- Móvil ---------- */
+@media (max-width: 640px){
+  /* 16px evita que iOS haga zoom al enfocar un campo */
+  input, select, textarea,
+  .formulario input, .formulario select, .formulario textarea{ font-size: 16px; }
+}
+
+@media (max-width: 560px){
+  .pagina-app > :not(.barra):not(.pie-fijo):not(.modal):not(script){ padding-inline: .9rem; }
+
+  /* Fila de libro: portada + texto arriba, datos en una segunda línea */
+  .lista-libros .fila-libro{ grid-template-columns: auto minmax(0, 1fr); gap: .6rem .8rem; padding: .85rem .9rem; }
+  .lista-libros .fila-libro-datos{
+    grid-column: 1 / -1;
+    flex-direction: row; flex-wrap: wrap;
+    justify-content: space-between; align-items: center;
+    gap: .4rem .8rem;
+  }
+  .portada-mini{ width: 44px; }
+
+  /* Filas del panel de administración */
+  .fila-libro{ flex-wrap: wrap; }
+  .fila-libro .acciones{ flex-wrap: wrap; }
+
+  .portada-grande{ width: 84px; }
+  .barras-mes{ height: 120px; padding: .6rem .4rem .4rem; gap: .2rem; }
+  .estado-fila{ grid-template-columns: 78px 1fr 24px; }
+}
+
+
+/* ===================================================================
+   Header, footer, respaldo (cargar), modal y estadísticas ampliadas
+   =================================================================== */
+
+/* Las pestañas ya no van pegadas al header */
+.pestañas{ margin-top: 1.1rem; }
+
+/* Botón del tema: dentro del header puede quedarse solo con el icono en móvil */
+.barra .boton-tema{ white-space: nowrap; min-height: 36px; }
+
+/* --- Respaldo: botones juntos --- */
+.resumen-filtro{ flex-wrap: wrap; }
+.botones-respaldo{ display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* --- Footer fijo (se rellena desde js/pie.js) --- */
+.pie-fijo{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 90;
+  height: calc(var(--alto-pie) + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(1.2rem, calc((100% - var(--ancho-contenido)) / 2 + 1.2rem)) env(safe-area-inset-bottom, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--superficie);
+  border-top: 1px solid var(--linea);
+  box-shadow: 0 -4px 18px rgba(0,0,0,.22);
+  font-size: .8rem;
+  color: var(--muted);
+}
+.pie-texto{
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pie-enlaces{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pie-enlaces::-webkit-scrollbar{ display: none; }
+.pie-enlace{
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 32px;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.pie-enlace:hover, .pie-enlace:focus-visible{ color: var(--accent); }
+
+/* --- Modal de confirmación --- */
+.modal{
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  background: rgba(8,10,14,.62);
+}
+.modal-caja{
+  width: 100%; max-width: 460px; max-height: 100%; overflow-y: auto;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 1.3rem 1.3rem 1.1rem;
+}
+.modal-caja h3{ font-size: 1.1rem; margin-bottom: .6rem; }
+.modal-resumen{ margin: 0 0 .8rem; font-size: .9rem; overflow-wrap: anywhere; }
+.modal-aviso{
+  margin: 0 0 .8rem; font-size: .88rem;
+  background: var(--vino-suave); color: var(--texto);
+  border-left: 3px solid var(--vino); border-radius: var(--radio-sm);
+  padding: .6rem .7rem;
+}
+.enlace-boton{
+  font-family: inherit; font-size: .82rem; color: var(--accent);
+  background: none; border: none; padding: .2rem 0; cursor: pointer; text-align: left;
+  text-decoration: underline;
+}
+.enlace-boton:disabled{ opacity: .6; cursor: default; }
+.modal-acciones{ display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1rem; }
+.boton-peligro{
+  font-family: inherit; font-size: .9rem; font-weight: 600;
+  background: var(--vino); color: #fff; border: none;
+  border-radius: 999px; padding: .5rem 1.1rem; cursor: pointer;
+}
+.boton-peligro:hover{ filter: brightness(1.1); }
+.boton-peligro:disabled, .boton-fantasma:disabled{ opacity: .6; cursor: default; }
+
+/* --- Estadísticas ampliadas --- */
+.estad-barra, .estad-cabecera{
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .5rem .8rem;
+}
+.estad-barra .titulo-seccion, .estad-cabecera .titulo-seccion{ margin: 1.6rem 0 .7rem; }
+.estad-barra .titulo-seccion{ margin-top: .2rem; }
+.estad-cabecera + .tiles{ margin-bottom: .3rem; }
+.selector-año{ display: flex; align-items: center; gap: .5rem; font-size: .82rem; color: var(--muted); }
+.selector-año select{ padding: .3rem .5rem; font-size: .85rem; }
+.estad-seccion{ margin-top: .4rem; }
+.estad-nota{ margin: .6rem 0 .5rem; font-size: .74rem; color: var(--muted); }
+
+.segmentos{ display: flex; gap: .25rem; background: var(--superficie-2); border-radius: 999px; padding: .2rem; }
+.segmento{
+  font-family: inherit; font-size: .78rem; font-weight: 600;
+  background: none; border: none; color: var(--muted);
+  padding: .3rem .8rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
+}
+.segmento.activo{ background: var(--accent); color: #fff; }
+.segmento:not(.activo):hover{ color: var(--texto); }
+
+.sin-datos{
+  margin: 0; padding: 1.6rem 1rem; text-align: center; color: var(--muted); font-size: .88rem;
+  background: var(--superficie); border: 1px dashed var(--linea); border-radius: var(--radio);
+}
+.barra-mes.actual .barra-mes-etq{ color: var(--texto); font-weight: 700; }
+.barra-mes.actual .barra-mes-relleno{ background: var(--accent-hover); }
+.barras-semana .barra-mes-etq{ font-size: .62rem; }
+
+/* ---------- Responsivo: tablet y móvil ---------- */
+@media (max-width: 640px){
+  :root{ --alto-barra: 58px; }
+  .barra{ gap: .6rem; padding-block: .4rem; }
+  .barra h1{ font-size: 1.05rem; }
+  .logo-enlace{ width: 36px; height: 36px; border-radius: 9px; }
+  /* Botones de la cabecera más compactos; el botón de tema queda solo con el icono */
+  .barra .boton-fantasma, .barra .boton-tema{ font-size: .78rem; padding: .35rem .65rem; min-height: 36px; display: inline-flex; align-items: center; }
+  .barra .boton-tema-txt{ display: none; }
+}
+
+@media (max-width: 560px){
+  /* Footer en dos filas: enlaces arriba, descripción abajo (alto fijo para poder reservar el espacio) */
+  :root{ --alto-pie: 68px; }
+  .pie-fijo{
+    flex-direction: column; align-items: stretch; justify-content: center; gap: .1rem;
+    padding-inline: .9rem; font-size: .76rem;
+  }
+  .pie-enlaces{ order: -1; justify-content: space-around; gap: .6rem; }
+  .pie-texto{ flex: 0 0 auto; text-align: center; }
+
+  .botones-respaldo{ width: 100%; }
+  .botones-respaldo .boton-fantasma{ flex: 1 1 140px; min-height: 40px; }
+  .resumen-filtro .num{ width: 100%; }
+
+  .modal{ align-items: flex-end; padding: .6rem; }
+  .modal-acciones{ flex-direction: column-reverse; }
+  .modal-acciones button{ width: 100%; min-height: 44px; }
+
+  /* Etiquetas de semanas: se muestran las semanas pares (incluida la actual) para que no se pisen */
+  .barras-semana .barra-mes:nth-child(odd) .barra-mes-etq{ visibility: hidden; }
+  .segmento{ padding: .3rem .65rem; }
+  .tile-valor{ font-size: 1.35rem; }
+}
+
+@media (max-width: 360px){
+  .pie-enlace span{ font-size: .72rem; }
+  .pie-enlaces{ gap: .4rem; }
+}

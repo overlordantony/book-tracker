@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora de lectura — Entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script type="module" src="js/theme.js"></script>
+<link rel="manifest" href="manifest.json">
+<!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="theme-color" content="#12151a">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script type="module" src="js/pwa.js"></script>
+<!-- Pie de página fijo (se edita en js/pie.js) -->
+<script type="module" src="js/pie.js"></script>
+</head>
+<body class="pagina-login">
+  <button id="btnTema" class="boton-tema"></button>
+
+  <main class="tarjeta-login">
+    <h1>Bitácora de lectura</h1>
+    <p class="sub">Tu registro personal de lectura</p>
+
+    <!-- Login -->
+    <form id="formLogin">
+      <label for="email">Correo</label>
+      <input type="email" id="email" required autocomplete="username">
+
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" required autocomplete="current-password">
+
+      <p id="error" class="error" hidden></p>
+
+      <button type="submit">Entrar</button>
+    </form>
+
+    <p style="text-align:center; margin-top:.8rem;">
+      <a href="#" id="linkOlvide" style="font-size:.82rem; color:var(--muted)">¿Olvidaste tu contraseña?</a>
+    </p>
+
+    <div style="display:flex; align-items:center; gap:.6rem; margin:1.2rem 0;">
+      <div style="flex:1; height:1px; background:var(--linea)"></div>
+      <span style="font-size:.75rem; color:var(--muted)">o</span>
+      <div style="flex:1; height:1px; background:var(--linea)"></div>
+    </div>
+
+    <button id="btnGoogle" type="button" class="boton-fantasma" style="width:100%; padding:.65rem;">
+      Entrar con Google
+    </button>
+
+    <p style="text-align:center; margin-top:1.2rem; font-size:.85rem; color:var(--muted)">
+      ¿No tienes cuenta?
+      <a href="#" id="linkMostrarRegistro">Regístrate</a>
+    </p>
+
+    <!-- Registro (oculto por defecto) -->
+    <form id="formRegistro" hidden style="margin-top:1rem;">
+      <label for="regNombre">Nombre o apodo</label>
+      <input type="text" id="regNombre">
+
+      <label for="regEmail">Correo</label>
+      <input type="email" id="regEmail" required autocomplete="username">
+
+      <label for="regPassword">Contraseña</label>
+      <input type="password" id="regPassword" required minlength="6" autocomplete="new-password">
+
+      <p id="errorRegistro" class="error" hidden></p>
+      <p id="avisoRegistro" class="vacio" hidden style="margin-top:.6rem; padding:0;"></p>
+
+      <button type="submit" style="margin-top:1.1rem;">Crear cuenta</button>
+    </form>
+  </main>
+
+  <script type="module">
+    import { login, registrarse, enviarRestablecimiento, loginConGoogle, logout, vigilarSesion } from "./js/auth.js";
+    import { asegurarPerfil } from "./js/roles.js";
+    import { iniciarToggleTema } from "./js/theme.js";
+    iniciarToggleTema();
+
+    // Si ya hay sesión activa, saltar directo a la app.
+    vigilarSesion((usuario) => {
+      if (usuario) window.location.href = "app.html";
+    });
+
+    // --- Login ---
+    const formLogin = document.getElementById("formLogin");
+    const errorEl = document.getElementById("error");
+
+    formLogin.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        await login(email, password);
+        window.location.href = "app.html";
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.hidden = false;
+      }
+    });
+
+    // --- Olvidé mi contraseña ---
+    document.getElementById("linkOlvide").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value || prompt("Escribe tu correo para enviarte el enlace de recuperación:");
+      if (!email) return;
+      try {
+        await enviarRestablecimiento(email);
+        alert("Si ese correo está registrado, te llegará un enlace para restablecer tu contraseña.");
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // --- Google ---
+    document.getElementById("btnGoogle").addEventListener("click", async () => {
+      errorEl.hidden = true;
+      try {
+        const usuario = await loginConGoogle();
+        const perfil = await asegurarPerfil(usuario);
+        if (perfil.estado !== "Activo") {
+          await logout();
+          errorEl.textContent = perfil.estado === "pendiente"
+            ? "Tu cuenta con Google fue creada. Un administrador debe activarla antes de que puedas entrar."
+            : "Tu cuenta no está activa. Contacta al administrador.";
+          errorEl.hidden = false;
+          return;
+        }
+        window.location.href = "app.html";
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.hidden = false;
+      }
+    });
+
+    // --- Mostrar/ocultar registro ---
+    const formRegistro = document.getElementById("formRegistro");
+    document.getElementById("linkMostrarRegistro").addEventListener("click", (e) => {
+      e.preventDefault();
+      formRegistro.hidden = !formRegistro.hidden;
+    });
+
+    // --- Registro ---
+    const errorRegistro = document.getElementById("errorRegistro");
+    const avisoRegistro = document.getElementById("avisoRegistro");
+
+    formRegistro.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorRegistro.hidden = true;
+      avisoRegistro.hidden = true;
+      const nombre = document.getElementById("regNombre").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value;
+      try {
+        await registrarse(email, password, nombre);
+        avisoRegistro.textContent = "Cuenta creada. Un administrador debe activarla antes de que puedas entrar.";
+        avisoRegistro.hidden = false;
+        formRegistro.reset();
+      } catch (err) {
+        errorRegistro.textContent = err.message;
+        errorRegistro.hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>

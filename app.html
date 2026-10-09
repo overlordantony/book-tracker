@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora de lectura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script type="module" src="js/theme.js"></script>
+<link rel="manifest" href="manifest.json">
+<!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="theme-color" content="#12151a">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script type="module" src="js/pwa.js"></script>
+<!-- Pie de página fijo (se edita en js/pie.js) -->
+<script type="module" src="js/pie.js"></script>
+</head>
+<body class="pagina-app">
+
+  <header class="barra">
+    <a class="logo-enlace" href="app.html" aria-label="Ir a la biblioteca"><img class="logo" src="icons/icon-192.png" alt="" width="40" height="40"></a>
+    <h1>Bitácora de lectura</h1>
+    <div class="acciones">
+      <button id="btnTema" class="boton-tema"></button>
+      <a id="linkAdmin" href="admin.html" class="boton-fantasma" style="text-decoration:none; display:none;">Administración</a>
+      <button id="btnSalir" class="boton-fantasma">Salir</button>
+    </div>
+  </header>
+
+  <p id="cuentaInactiva" class="vacio" hidden></p>
+
+  <div id="contenidoApp" hidden>
+
+  <p id="avisoVistaAjena" class="vacio" hidden></p>
+
+  <nav class="pestañas">
+    <button class="pestaña activa" data-vista="biblioteca">Biblioteca</button>
+    <button class="pestaña" data-vista="estadisticas">Estadísticas</button>
+    <button class="pestaña" data-vista="citas">Citas</button>
+    <button class="pestaña" id="pestañaAgregar" data-vista="agregar">Agregar libro</button>
+  </nav>
+
+  <main>
+    <section id="vistaBiblioteca" class="vista">
+      <div class="barra-herramientas">
+        <input type="search" id="buscador" placeholder="Buscar por título, autor, género o etiqueta…">
+        <div class="filtros">
+          <select id="filtroEstado">
+            <option value="">Todos los estados</option>
+            <option value="leyendo">Leyendo</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="pausado">Pausado</option>
+            <option value="terminado">Terminado</option>
+            <option value="descartado">Descartado</option>
+          </select>
+          <select id="filtroEtiqueta"><option value="">Géneros y etiquetas</option></select>
+          <select id="orden">
+            <option value="reciente">Más reciente</option>
+            <option value="titulo">Título (A–Z)</option>
+            <option value="autor">Autor (A–Z)</option>
+            <option value="progreso">% leído</option>
+            <option value="calificacion">Calificación</option>
+          </select>
+        </div>
+        <div class="resumen-filtro">
+          <span id="contadorLibros" class="num"></span>
+          <div class="botones-respaldo">
+            <button type="button" id="btnRespaldo" class="boton-fantasma">Descargar respaldo</button>
+            <button type="button" id="btnCargarRespaldo" class="boton-fantasma">Cargar respaldo</button>
+            <!-- Mismo formato que genera "Descargar respaldo": archivo .json -->
+            <input type="file" id="inputRespaldo" accept=".json,application/json" hidden>
+          </div>
+        </div>
+      </div>
+      <p id="bibliotecaVacia" class="vacio" hidden></p>
+      <div id="listaLibros" class="lista-libros"></div>
+    </section>
+
+    <section id="vistaEstadisticas" class="vista" hidden>
+      <div id="contenedorEstadisticas"></div>
+    </section>
+
+    <section id="vistaCitas" class="vista" hidden>
+      <div class="barra-herramientas">
+        <input type="search" id="buscadorCitas" placeholder="Buscar en las citas de todos tus libros…">
+        <div class="filtros">
+          <select id="filtroEtiquetaCita"><option value="">Todas las etiquetas</option></select>
+          <label class="check"><input type="checkbox" id="soloFavoritas"> Solo favoritas</label>
+        </div>
+      </div>
+      <div id="listaCitasGlobal"></div>
+    </section>
+
+    <section id="vistaAgregar" class="vista" hidden>
+      <form id="formLibro" class="formulario">
+
+        <fieldset>
+          <legend>Datos básicos</legend>
+
+          <label for="titulo">Título *</label>
+          <input type="text" id="titulo" required>
+
+          <label for="autor">Autor *</label>
+          <input type="text" id="autor" required>
+
+          <label for="portadaUrl">URL de portada</label>
+          <input type="url" id="portadaUrl" placeholder="https://...">
+
+          <label for="url">URL de tienda (si lo compraste digital)</label>
+          <input type="url" id="url" placeholder="https://...">
+
+          <label for="generos">Géneros (separados por coma)</label>
+          <input type="text" id="generos" placeholder="ciencia ficción, distopía">
+
+          <label for="etiquetas">Etiquetas (separadas por coma)</label>
+          <input type="text" id="etiquetas" placeholder="club de lectura, pendiente de relectura">
+        </fieldset>
+
+        <fieldset>
+          <legend>Progreso</legend>
+
+          <label for="estado">Estado</label>
+          <select id="estado">
+            <option value="pendiente">Pendiente</option>
+            <option value="leyendo" selected>Leyendo</option>
+            <option value="pausado">Pausado</option>
+            <option value="terminado">Terminado</option>
+            <option value="descartado">Descartado</option>
+          </select>
+
+          <label for="formato">Formato</label>
+          <select id="formato">
+            <option value="fisico">Físico</option>
+            <option value="digital">Digital</option>
+            <option value="audiolibro">Audiolibro</option>
+          </select>
+
+          <div class="fila">
+            <div>
+              <label for="totalPaginas">Total de páginas</label>
+              <input type="number" id="totalPaginas" min="0">
+            </div>
+            <div>
+              <label for="paginaActual">Página actual</label>
+              <input type="number" id="paginaActual" min="0" value="0">
+            </div>
+          </div>
+
+          <div class="fila">
+            <div>
+              <label for="fechaInicio">Fecha de inicio</label>
+              <input type="date" id="fechaInicio">
+            </div>
+            <div>
+              <label for="fechaFin">Fecha de fin</label>
+              <input type="date" id="fechaFin">
+            </div>
+          </div>
+
+          <label for="calificacion">Calificación (1-5)</label>
+          <input type="number" id="calificacion" min="1" max="5">
+        </fieldset>
+
+        <fieldset>
+          <legend>Extra</legend>
+
+          <label for="notas">Notas</label>
+          <textarea id="notas" rows="3"></textarea>
+
+          <label for="observaciones">Observaciones</label>
+          <textarea id="observaciones" rows="2"></textarea>
+        </fieldset>
+
+        <p id="formError" class="error" hidden></p>
+        <button type="submit">Guardar libro</button>
+      </form>
+    </section>
+  </main>
+
+  </div>
+
+  <!-- Confirmación antes de sobrescribir los datos con un respaldo -->
+  <div id="modalRestaurar" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalRestaurarTitulo" hidden>
+    <div class="modal-caja">
+      <h3 id="modalRestaurarTitulo">Restaurar respaldo</h3>
+      <p id="modalRestaurarResumen" class="modal-resumen"></p>
+      <p class="modal-aviso"><strong>Se sobrescribirán tus datos actuales.</strong> Los libros que no estén en el archivo se eliminarán de tu biblioteca. Esta acción no se puede deshacer.</p>
+      <button type="button" id="btnCopiaActual" class="enlace-boton">Descargar una copia de lo actual antes de continuar</button>
+      <p id="modalRestaurarError" class="error" hidden></p>
+      <div class="modal-acciones">
+        <button type="button" id="btnCancelarRestaurar" class="boton-fantasma">Cancelar</button>
+        <button type="button" id="btnConfirmarRestaurar" class="boton-peligro">Sí, sobrescribir</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

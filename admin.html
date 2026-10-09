@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora de lectura — Administración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script type="module" src="js/theme.js"></script>
+<link rel="manifest" href="manifest.json">
+<!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="theme-color" content="#12151a">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script type="module" src="js/pwa.js"></script>
+<!-- Pie de página fijo (se edita en js/pie.js) -->
+<script type="module" src="js/pie.js"></script>
+</head>
+<body class="pagina-app">
+
+  <header class="barra">
+    <a class="logo-enlace" href="app.html" aria-label="Ir a la biblioteca"><img class="logo" src="icons/icon-192.png" alt="" width="40" height="40"></a>
+    <h1>Administración</h1>
+    <div class="acciones">
+      <button id="btnTema" class="boton-tema"></button>
+      <a href="app.html" class="boton-fantasma" style="text-decoration:none; display:inline-block;">Volver</a>
+      <button id="btnSalir" class="boton-fantasma">Salir</button>
+    </div>
+  </header>
+
+  <p id="bloqueado" class="vacio" hidden>No tienes permisos para ver esta página.</p>
+
+  <main id="contenidoAdmin" hidden>
+
+    <section class="vista">
+      <form id="formUsuario" class="formulario-mini">
+        <div class="fila">
+          <input type="text" id="nuevoNombre" placeholder="Nombre o apodo">
+          <input type="email" id="nuevoEmail" placeholder="Correo del nuevo usuario" required>
+        </div>
+        <input type="password" id="nuevaPassword" placeholder="Contraseña" required minlength="6">
+        <select id="nuevoRol">
+          <option value="lector">Lector (solo ve/edita lo suyo)</option>
+          <option value="Admin">Admin (ve todo)</option>
+        </select>
+        <p id="errorUsuario" class="error" hidden></p>
+        <button type="submit" class="boton-principal">Crear usuario</button>
+      </form>
+
+      <div class="acciones-libro" style="margin-top:1.4rem">
+        <button type="button" id="btnRespaldoTotal" class="boton-fantasma">Descargar respaldo de todos los usuarios</button>
+      </div>
+
+      <h3 style="margin: 1.6rem 0 .8rem; font-size: 1rem;">Usuarios</h3>
+      <div id="listaUsuarios"></div>
+    </section>
+
+  </main>
+
+  <script type="module" src="js/admin.page.js"></script>
+</body>
+</html>
