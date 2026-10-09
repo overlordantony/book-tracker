@@ -47,12 +47,18 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-const ROL_LABEL = { admin: "Admin", lector: "Lector" };
-const ESTADO_LABEL = { activo: "Activo", inactivo: "Inactivo", pendiente: "Pendiente" };
+const ROL_LABEL = { Admin: "Admin", Lector: "Lector" };
+const ESTADO_LABEL = { Activo: "Activo", Inactivo: "Inactivo", Pendiente: "Pendiente" };
 
 async function cargarUsuarios() {
   const lista = document.getElementById("listaUsuarios");
-  const usuarios = await obtenerUsuarios();
+  let usuarios;
+  try {
+    usuarios = await obtenerUsuarios();
+  } catch (err) {
+    lista.innerHTML = `<p class="vacio">No se pudo cargar la lista de usuarios: ${escapeHtml(err.message)}</p>`;
+    return;
+  }
   lista.innerHTML = "";
 
   if (!usuarios.length) {

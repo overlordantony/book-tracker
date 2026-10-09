@@ -26,8 +26,8 @@ export async function login(email, password) {
 
 // Autoregistro público: crea la cuenta de Auth y su perfil en Firestore
 // en estado "Pendiente" — las reglas de Firestore exigen que un
-// documento creado por el propio usuario nazca así (rol lector,
-// estado pendiente); solo un admin puede luego activarlo o subirle
+// documento creado por el propio usuario nazca así (rol Lector,
+// estado Pendiente); solo un admin puede luego activarlo o subirle
 // el rol, desde el panel de administración.
 export async function registrarse(email, password, nombre) {
   try {

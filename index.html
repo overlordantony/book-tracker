@@ -81,26 +81,48 @@
     import { iniciarToggleTema } from "./js/theme.js";
     iniciarToggleTema();
 
+    // Mientras alguien inicia sesión o se registra no se redirige solo:
+    // primero hay que terminar de guardar su perfil en la colección "usuarios".
+    let procesandoAcceso = false;
+
     // Si ya hay sesión activa, saltar directo a la app.
     vigilarSesion((usuario) => {
-      if (usuario) window.location.href = "app.html";
+      if (usuario && !procesandoAcceso) window.location.href = "app.html";
     });
 
-    // --- Login ---
     const formLogin = document.getElementById("formLogin");
     const errorEl = document.getElementById("error");
 
+    // Si la cuenta no está activa, cierra la sesión y avisa en esta misma pantalla.
+    async function bloquearSiNoActiva(perfil) {
+      if (perfil.estado === "Activo") return false;
+      await logout();
+      errorEl.textContent = perfil.estado === "Pendiente"
+        ? "Tu cuenta quedó pendiente de aprobación. Un administrador debe activarla antes de que puedas entrar."
+        : "Tu cuenta no está activa. Contacta al administrador.";
+      errorEl.hidden = false;
+      return true;
+    }
+
+    // --- Login ---
     formLogin.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorEl.hidden = true;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      procesandoAcceso = true;
       try {
-        await login(email, password);
+        const usuario = await login(
+          document.getElementById("email").value,
+          document.getElementById("password").value
+        );
+        // Si esa cuenta existía solo en Authentication, aquí se crea su perfil.
+        const perfil = await asegurarPerfil(usuario);
+        if (await bloquearSiNoActiva(perfil)) return;
         window.location.href = "app.html";
       } catch (err) {
         errorEl.textContent = err.message;
         errorEl.hidden = false;
+      } finally {
+        procesandoAcceso = false;
       }
     });
 
@@ -120,21 +142,18 @@
     // --- Google ---
     document.getElementById("btnGoogle").addEventListener("click", async () => {
       errorEl.hidden = true;
+      procesandoAcceso = true;
       try {
         const usuario = await loginConGoogle();
         const perfil = await asegurarPerfil(usuario);
-        if (perfil.estado !== "Activo") {
-          await logout();
-          errorEl.textContent = perfil.estado === "Pendiente"
-            ? "Tu cuenta con Google fue creada. Un administrador debe activarla antes de que puedas entrar."
-            : "Tu cuenta no está activa. Contacta al administrador.";
-          errorEl.hidden = false;
-          return;
-        }
+        if (await bloquearSiNoActiva(perfil)) return;
         window.location.href = "app.html";
       } catch (err) {
+        await logout();
         errorEl.textContent = err.message;
         errorEl.hidden = false;
+      } finally {
+        procesandoAcceso = false;
       }
     });
 
@@ -156,6 +175,7 @@
       const nombre = document.getElementById("regNombre").value.trim();
       const email = document.getElementById("regEmail").value.trim();
       const password = document.getElementById("regPassword").value;
+      procesandoAcceso = true;
       try {
         await registrarse(email, password, nombre);
         avisoRegistro.textContent = "Cuenta creada. Un administrador debe activarla antes de que puedas entrar.";
@@ -164,6 +184,8 @@
       } catch (err) {
         errorRegistro.textContent = err.message;
         errorRegistro.hidden = false;
+      } finally {
+        procesandoAcceso = false;
       }
     });
   </script>
