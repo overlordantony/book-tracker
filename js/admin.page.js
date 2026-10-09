@@ -62,7 +62,7 @@ async function cargarUsuarios() {
 
   usuarios.forEach(u => {
     const div = document.createElement("div");
-    div.className = "fila-libro" + (u.estado === "Pendiente" ? " estado-pausado" : u.estado === "inactivo" ? " estado-descartado" : "");
+    div.className = "fila-libro" + (u.estado === "Pendiente" ? " estado-pausado" : u.estado === "Inactivo" ? " estado-descartado" : "");
     div.innerHTML = `
       <div>
         <h3>${escapeHtml(u.nombre) || escapeHtml(u.email)}</h3>
@@ -90,7 +90,7 @@ async function cargarUsuarios() {
       </div>
       <select class="editEstadoUsuario">
         <option value="Activo" ${u.estado === "Activo" ? "selected" : ""}>Activo</option>
-        <option value="inactivo" ${u.estado === "inactivo" ? "selected" : ""}>Inactivo</option>
+        <option value="Inactivo" ${u.estado === "Inactivo" ? "selected" : ""}>Inactivo</option>
         <option value="Pendiente" ${u.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
       </select>
       <div style="display:flex;gap:.6rem">
