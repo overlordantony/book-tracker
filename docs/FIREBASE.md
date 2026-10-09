@@ -62,7 +62,7 @@ Las reglas están en [`firestore.rules`](../firestore.rules). Resumen de lo que 
 
 | Colección | Quién puede qué |
 |---|---|
-| `usuarios/{uid}` | Cada persona lee su perfil; solo un admin lista, edita o borra perfiles. Cualquiera puede **crear su propio perfil** únicamente como `rol: "lector"` y `estado: "pendiente"`. |
+| `usuarios/{uid}` | Cada persona lee su perfil; solo un admin lista, edita o borra perfiles. Cualquiera puede **crear su propio perfil** únicamente como `rol: "Lector"` y `estado: "Pendiente"`. |
 | `libros/{id}` | Solo cuentas `Activo`. Cada una lee/escribe **solo sus libros** (`propietarioUid == su uid`). Un `Admin` lee los de todos (solo lectura). |
 | `libros/{id}/capitulos│personajes│citas│conceptos` | Mismo criterio que el libro padre (el dueño escribe; el dueño y el admin leen). |
 | Cualquier otra ruta | Denegada. |

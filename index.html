@@ -125,7 +125,7 @@
         const perfil = await asegurarPerfil(usuario);
         if (perfil.estado !== "Activo") {
           await logout();
-          errorEl.textContent = perfil.estado === "pendiente"
+          errorEl.textContent = perfil.estado === "Pendiente"
             ? "Tu cuenta con Google fue creada. Un administrador debe activarla antes de que puedas entrar."
             : "Tu cuenta no está activa. Contacta al administrador.";
           errorEl.hidden = false;

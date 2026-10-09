@@ -62,14 +62,14 @@ async function cargarUsuarios() {
 
   usuarios.forEach(u => {
     const div = document.createElement("div");
-    div.className = "fila-libro" + (u.estado === "pendiente" ? " estado-pausado" : u.estado === "inactivo" ? " estado-descartado" : "");
+    div.className = "fila-libro" + (u.estado === "Pendiente" ? " estado-pausado" : u.estado === "inactivo" ? " estado-descartado" : "");
     div.innerHTML = `
       <div>
         <h3>${escapeHtml(u.nombre) || escapeHtml(u.email)}</h3>
         <p class="autor">${escapeHtml(u.email)} · ${ROL_LABEL[u.rol] || u.rol}</p>
       </div>
       <div class="acciones">
-        <span class="chip${u.estado === "pendiente" ? " favorita" : ""}">${ESTADO_LABEL[u.estado] || u.estado || "—"}</span>
+        <span class="chip${u.estado === "Pendiente" ? " favorita" : ""}">${ESTADO_LABEL[u.estado] || u.estado || "—"}</span>
         <button type="button" class="boton-fantasma btn-editar-usuario">Editar</button>
         <a class="boton-fantasma" style="text-decoration:none" href="app.html?uid=${encodeURIComponent(u.id)}">
           Ver biblioteca
@@ -84,14 +84,14 @@ async function cargarUsuarios() {
       <div class="fila">
         <input type="text" class="editNombreUsuario" placeholder="Nombre o apodo" value="${escapeHtml(u.nombre || "")}">
         <select class="editRolUsuario">
-          <option value="lector" ${u.rol === "lector" ? "selected" : ""}>Lector</option>
+          <option value="Lector" ${u.rol === "Lector" ? "selected" : ""}>Lector</option>
           <option value="Admin" ${u.rol === "Admin" ? "selected" : ""}>Admin</option>
         </select>
       </div>
       <select class="editEstadoUsuario">
         <option value="Activo" ${u.estado === "Activo" ? "selected" : ""}>Activo</option>
         <option value="inactivo" ${u.estado === "inactivo" ? "selected" : ""}>Inactivo</option>
-        <option value="pendiente" ${u.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
+        <option value="Pendiente" ${u.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
       </select>
       <div style="display:flex;gap:.6rem">
         <button type="submit" class="boton-principal">Guardar</button>

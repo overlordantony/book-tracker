@@ -15,7 +15,7 @@ export async function obtenerPerfil(uid) {
 }
 
 // Si el usuario (recién logueado, típicamente por Google) todavía no
-// tiene documento en "usuarios", se lo crea en estado "pendiente" para
+// tiene documento en "usuarios", se lo crea en estado "Pendiente" para
 // que un admin lo active. Si ya existe, no hace nada.
 export async function asegurarPerfil(user) {
   const ref = doc(db, "usuarios", user.uid);
@@ -25,8 +25,8 @@ export async function asegurarPerfil(user) {
   const perfil = {
     email: user.email || "",
     nombre: user.displayName || "",
-    rol: "lector",
-    estado: "pendiente",
+    rol: "Lector",
+    estado: "Pendiente",
     creadoEn: serverTimestamp()
   };
   await setDoc(ref, perfil);

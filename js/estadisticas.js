@@ -11,7 +11,7 @@ const MESES_LARGOS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "ju
 const ESTADOS = [
   ["leyendo", "Leyendo"],
   ["terminado", "Terminado"],
-  ["pendiente", "Pendiente"],
+  ["Pendiente", "Pendiente"],
   ["pausado", "Pausado"],
   ["descartado", "Descartado"]
 ];

@@ -48,7 +48,7 @@ vigilarSesion(async (usuario) => {
   if (!perfil || perfil.estado !== "Activo") {
     const aviso = document.getElementById("cuentaInactiva");
     aviso.hidden = false;
-    aviso.textContent = !perfil || perfil.estado === "pendiente"
+    aviso.textContent = !perfil || perfil.estado === "Pendiente"
       ? "Tu cuenta está pendiente de aprobación por un administrador."
       : "Tu cuenta está inactiva. Contacta al administrador.";
     return;

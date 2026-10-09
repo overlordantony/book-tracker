@@ -29,7 +29,7 @@ export async function crearUsuario(email, password, rol, nombre) {
     const uid = credenciales.user.uid;
 
     // Los usuarios creados desde el panel por un admin entran ya
-    // "Activo" — el flujo de "pendiente" es solo para quien se
+    // "Activo" — el flujo de "Pendiente" es solo para quien se
     // autoregistra desde index.html.
     await setDoc(doc(db, "usuarios", uid), {
       email,
