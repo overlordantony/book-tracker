@@ -763,3 +763,5 @@ input[type="search"]{ -webkit-appearance: none; appearance: none; }
   .pie-enlace span{ font-size: .72rem; }
   .pie-enlaces{ gap: .4rem; }
 }
+
+#linkMostrarRegistro, #linkOlvide { color: var(--accent); }
