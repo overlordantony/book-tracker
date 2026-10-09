@@ -1,8 +1,8 @@
-# 📚 Bitácora de lectura
+# Bitácora de lectura
 
 Aplicación web para llevar el registro personal de lo que lees: biblioteca con filtros, progreso por libro, capítulos, personajes, conceptos, citas, estadísticas y respaldos. Es una app **100 % estática** (HTML + CSS + JavaScript con módulos ES) que usa **Firebase** (Authentication + Firestore) como backend, así que se puede publicar gratis en **GitHub Pages**.
 
-> 👉 La puesta en marcha de Firebase (proyecto, reglas, primer administrador, despliegue) está en **[docs/FIREBASE.md](docs/FIREBASE.md)**.
+> La puesta en marcha de Firebase (proyecto, reglas, primer administrador, despliegue) está en **[docs/FIREBASE.md](docs/FIREBASE.md)**.
 
 ---
 
@@ -127,7 +127,3 @@ Las semanas empiezan en lunes. El selector de año afecta a las vistas mensuales
 | No se ven cambios tras desplegar | El service worker sirve caché; recarga forzada o limpia datos del sitio. |
 
 Más detalles en [docs/FIREBASE.md §10](docs/FIREBASE.md#10-problemas-frecuentes).
-
-## Licencia
-
-Añade aquí la licencia de tu preferencia (por ejemplo MIT) y un archivo `LICENSE` en la raíz.
