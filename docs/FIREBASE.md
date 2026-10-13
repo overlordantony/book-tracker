@@ -1,10 +1,10 @@
 # Guía de Firebase para la Bitácora de lectura
 
-Esta guía te lleva de cero a tener tu propia copia de la app funcionando con Firebase y publicada en GitHub Pages. Todo se puede hacer con el **plan gratuito (Spark)**; no necesitas tarjeta ni Cloud Functions.
+Esta guía te lleva de cero a tener tu propia copia de la app funcionando con Firebase y publicada como sitio estático en **Netlify**. La app no tiene un proceso de build; para la configuración actual no se requieren Cloud Functions.
 
-**Qué vas a crear:** un proyecto de Firebase con *Authentication* (correo/contraseña y Google) y *Cloud Firestore* (base de datos), más las reglas de seguridad incluidas en `firestore.rules`.
+**Qué vas a crear:** un proyecto de Firebase con *Authentication* (correo/contraseña y Google) y *Cloud Firestore* (base de datos). Este checkout no incluye las reglas `firestore.rules` a las que apunta `firebase.json`; revisa el paso 5 antes de publicar reglas.
 
-Índice: [1 Proyecto](#1-crear-el-proyecto) · [2 App web](#2-registrar-la-app-web-y-copiar-la-configuración) · [3 Authentication](#3-activar-authentication) · [4 Firestore](#4-crear-firestore) · [5 Reglas](#5-publicar-las-reglas-de-seguridad) · [6 Primer admin](#6-crear-el-primer-administrador) · [7 Probar](#7-probar-en-local) · [8 GitHub Pages](#8-publicar-en-github-pages) · [9 Seguridad](#9-recomendaciones-de-seguridad-y-límites) · [10 Problemas](#10-problemas-frecuentes) · [Anexo: modelo de datos](#anexo-modelo-de-datos)
+Índice: [1 Proyecto](#1-crear-el-proyecto) · [2 App web](#2-registrar-la-app-web-y-copiar-la-configuración) · [3 Authentication](#3-activar-authentication) · [4 Firestore](#4-crear-firestore) · [5 Reglas](#5-publicar-las-reglas-de-seguridad) · [6 Primer admin](#6-crear-el-primer-administrador) · [7 Probar](#7-probar-en-local) · [8 Netlify](#8-publicar-en-netlify) · [9 Seguridad](#9-recomendaciones-de-seguridad-y-límites) · [10 Problemas](#10-problemas-frecuentes) · [Anexo: modelo de datos](#anexo-modelo-de-datos)
 
 ---
 
@@ -18,9 +18,9 @@ Esta guía te lleva de cero a tener tu propia copia de la app funcionando con Fi
 ## 2. Registrar la app web y copiar la configuración
 
 1. En la pantalla del proyecto, pulsa el icono **`</>` (Web)**.
-2. Ponle un apodo (p. ej. `bitacora-web`). **No** marques "Firebase Hosting" (usaremos GitHub Pages).
+2. Ponle un apodo (p. ej. `bitacora-web`). No necesitas marcar Firebase Hosting; el sitio se publica en Netlify.
 3. Firebase te mostrará un bloque `firebaseConfig`. También lo encuentras luego en **⚙️ Configuración del proyecto → Tus apps**.
-4. En tu copia del repositorio, **copia** `js/firebase-config.example.js` a `js/firebase-config.js` y pega tus valores:
+4. En tu copia del repositorio, configura `js/firebase-config.js` con los valores de tu app web (este checkout no incluye `js/firebase-config.example.js`):
 
    ```js
    export const firebaseConfig = {
@@ -33,7 +33,7 @@ Esta guía te lleva de cero a tener tu propia copia de la app funcionando con Fi
    };
    ```
 
-> La configuración web **no es secreta** (cualquier visitante la descarga con la página). Lo que protege tus datos son las **reglas de Firestore** (paso 5). Aun así, en el [§8](#8-publicar-en-github-pages) se explica cómo no subirla al repositorio si lo prefieres.
+> La configuración web **no es secreta** (cualquier visitante la descarga con la página). Lo que protege tus datos son las **reglas de Firestore** (paso 5) y las restricciones de API recomendadas (§9).
 
 La app usa el SDK **modular 12.19.0 cargado por CDN** (`https://www.gstatic.com/firebasejs/12.19.0/...`), así que no hay que instalar nada con `npm`.
 
@@ -43,7 +43,7 @@ La app usa el SDK **modular 12.19.0 cargado por CDN** (`https://www.gstatic.com/
 2. Pestaña **Sign-in method** y habilita:
    - **Correo electrónico/contraseña** (solo el primer interruptor; el *enlace por correo* no hace falta).
    - **Google** (elige un correo de asistencia del proyecto y guarda).
-3. Pestaña **Settings → Authorized domains**: deben estar `localhost` (viene por defecto) y, cuando publiques, tu dominio de GitHub Pages: `tu-usuario.github.io`. Si falta, Google devolverá `auth/unauthorized-domain`.
+3. Pestaña **Settings → Authorized domains**: deben estar `localhost` (viene por defecto) y el dominio de Netlify (por ejemplo, `nombre-del-sitio.netlify.app`), además de cualquier dominio personalizado. Si falta, Google devolverá `auth/unauthorized-domain`.
 4. (Opcional) En **Templates** puedes personalizar el correo de "restablecer contraseña", que usa el enlace "¿Olvidaste tu contraseña?".
 
 ## 4. Crear Firestore
@@ -58,7 +58,9 @@ No hace falta crear colecciones a mano salvo el primer administrador (paso 6). L
 
 ## 5. Publicar las reglas de seguridad
 
-Las reglas están en [`firestore.rules`](../firestore.rules). Resumen de lo que garantizan:
+**Importante:** `firebase.json` referencia un archivo `firestore.rules`, pero ese archivo no está presente en este checkout. No se puede publicar esa ruta con Firebase CLI hasta recuperar o crear y revisar el archivo. También puedes gestionar las reglas desde Firebase Console; en ambos casos debes definir reglas seguras para el modelo de datos antes de usar datos reales.
+
+Como mínimo, las reglas deben garantizar:
 
 | Colección | Quién puede qué |
 |---|---|
@@ -69,16 +71,16 @@ Las reglas están en [`firestore.rules`](../firestore.rules). Resumen de lo que 
 
 **Para publicarlas:**
 
-- *Desde la consola:* **Firestore Database → Rules**, pega el contenido de `firestore.rules` y pulsa **Publicar**.
-- *Con Firebase CLI* (opcional): `npm i -g firebase-tools && firebase login && firebase use --add && firebase deploy --only firestore:rules` (el repositorio ya trae `firebase.json`).
+- *Desde la consola:* **Firestore Database → Rules**, revisa o define reglas acordes con el modelo de datos y permisos anteriores, y pulsa **Publicar**. No uses reglas abiertas como `allow read, write: if true`.
+- *Con Firebase CLI:* primero recupera o crea `firestore.rules`, revísalo y luego ejecuta `firebase login`, `firebase use --add` y `firebase deploy --only firestore:rules`. `firebase.json` ya señala esa ruta.
 
-> ⚠️ Los valores distinguen mayúsculas: **`Admin`** y **`Activo`** con mayúscula inicial; `lector`, `pendiente` e `inactivo` en minúscula. Es como los escribe la app y como los comprueban las reglas.
+> ⚠️ Los valores distinguen mayúsculas: **`Admin`**, **`Lector`**, **`Activo`**, **`Pendiente`** e **`Inactivo`**. Usa estos valores al configurar perfiles y reglas.
 
-> ℹ️ Las reglas usan `getAfter()`/`existsAfter()` para las subcolecciones: así **Cargar respaldo** puede crear un libro y sus capítulos/citas en el mismo lote de escritura.
+> ℹ️ Al definir reglas, verifica que sean compatibles con las operaciones por lotes de **Cargar respaldo**. No se puede confirmar el contenido ni el comportamiento de reglas que no están incluidas en este checkout.
 
 ## 6. Crear el primer administrador
 
-La app no permite hacerse admin a sí misma (las reglas lo impiden a propósito), así que el **primer** admin se crea a mano desde la consola, que no está sujeta a las reglas:
+El autorregistro crea perfiles con rol `Lector` y estado `Pendiente`. Para crear el **primer** administrador, crea la cuenta y su perfil manualmente desde las consolas de Authentication y Firestore:
 
 1. **Authentication → Users → Add user**: correo y contraseña. Copia el **UID** que aparece en la lista.
 2. **Firestore Database → Iniciar colección** → ID de colección `usuarios`.
@@ -96,7 +98,7 @@ La app no permite hacerse admin a sí misma (las reglas lo impiden a propósito)
 
 **A partir de aquí todo se hace desde la app:**
 
-- **Autoregistro** (`index.html` → "Regístrate", o "Entrar con Google"): crea la cuenta con estado `pendiente`. En `admin.html` el admin la pasa a `Activo`.
+- **Autoregistro** (`index.html` → "Regístrate", o el primer acceso con Google): crea la cuenta con estado `Pendiente`. En `admin.html` el admin la pasa a `Activo`.
 - **Crear usuario desde el panel** (`admin.html`): el admin da correo, contraseña y rol, y el usuario nace `Activo`. (Internamente usa una segunda instancia de Firebase para no cerrar la sesión del admin.)
 - **Editar** nombre, rol y estado de cualquier usuario, y **Ver biblioteca** ajena en modo solo lectura.
 
@@ -118,37 +120,20 @@ Abre `http://localhost:8000` y comprueba:
 4. En `admin.html` creas un usuario lector, cierras sesión y entras con él: solo ve sus libros.
 5. (Opcional) En **Firestore → Rules → Rules Playground** simula lecturas como un usuario `Activo` frente a libros de otro dueño: deben denegarse.
 
-## 8. Publicar en GitHub Pages
+## 8. Publicar en Netlify
 
-### Opción A — simple (se sube `js/firebase-config.js` al repositorio)
+El repositorio contiene páginas estáticas y módulos ES, sin comando de build. Para el despliegue actual:
 
-1. Crea un repositorio en GitHub y sube el proyecto (con tu `js/firebase-config.js` ya relleno).
-2. **Settings → Pages → Build and deployment → Source: Deploy from a branch**, rama `main`, carpeta `/ (root)`.
-3. Espera a que aparezca la URL `https://tu-usuario.github.io/tu-repo/`.
-4. Vuelve a Firebase → **Authentication → Settings → Authorized domains** y agrega `tu-usuario.github.io`.
-
-Las rutas de la app son relativas, así que funciona dentro de `/tu-repo/` sin cambios.
-
-### Opción B — sin subir la configuración (GitHub Actions)
-
-Útil si no quieres que tus valores aparezcan en el repositorio (recuerda: seguirán siendo visibles en el sitio publicado, porque son públicos por naturaleza).
-
-1. En `.gitignore`, descomenta la línea `js/firebase-config.js`. Si ya lo habías subido, quítalo del índice: `git rm --cached js/firebase-config.js`.
-2. **Settings → Secrets and variables → Actions → New repository secret**:
-   - Nombre: `FIREBASE_CONFIG_JSON`
-   - Valor: tu configuración como **JSON con claves entre comillas**, por ejemplo:
-
-     ```json
-     {"apiKey":"AIza...","authDomain":"tu-proyecto.firebaseapp.com","projectId":"tu-proyecto","storageBucket":"tu-proyecto.firebasestorage.app","messagingSenderId":"1234567890","appId":"1:1234567890:web:abcdef"}
-     ```
-3. **Settings → Pages → Source: GitHub Actions**.
-4. Haz *push* a `main`: el flujo `.github/workflows/pages.yml` genera `js/firebase-config.js` a partir del secreto y publica el sitio.
-5. Agrega `tu-usuario.github.io` a los dominios autorizados (paso 3.3).
+1. En Netlify, crea un sitio conectado al repositorio o publica manualmente la carpeta del proyecto.
+2. Configura la raíz del repositorio como directorio de publicación y deja vacío el comando de build.
+3. Comprueba que el despliegue publicado tenga el archivo `js/firebase-config.js` con la configuración web del proyecto Firebase. Las variables de entorno de Netlify no se insertan automáticamente en archivos estáticos.
+4. Agrega el dominio `*.netlify.app` concreto del sitio y cualquier dominio personalizado en **Firebase → Authentication → Settings → Authorized domains**.
+5. Prueba acceso, lectura/escritura y permisos en el dominio publicado. La aplicación no incluye actualmente un archivo de configuración de despliegue Netlify versionado.
 
 ## 9. Recomendaciones de seguridad y límites
 
 - **Las reglas son tu seguridad real.** No cambies a "modo de prueba"/`allow read, write: if true`.
-- **Restringe la API key** (recomendado): Google Cloud Console → *APIs y servicios → Credenciales* → tu *Browser key* → **Restricciones de aplicaciones: Sitios web (referentes HTTP)** y agrega `https://tu-usuario.github.io/*` y `http://localhost:*`.
+- **Restringe la API key** (recomendado): Google Cloud Console → *APIs y servicios → Credenciales* → tu *Browser key* → **Restricciones de aplicaciones: Sitios web (referentes HTTP)** y agrega el dominio de producción (por ejemplo, `https://nombre-del-sitio.netlify.app/*`), cualquier dominio personalizado y `http://localhost:*`.
 - **Aprobación manual**: nadie usa la app hasta que un admin lo pone en `Activo`; mantén al menos un admin de respaldo.
 - **Cuotas del plan Spark**: Firestore y Authentication tienen límites diarios/mensuales gratuitos. Para uso personal o de un grupo pequeño sobran, pero consulta los límites vigentes en la documentación de Firebase. Cada lectura de reglas con `get()` cuenta como lectura; la app está pensada para uso moderado.
 - **Respaldos**: descarga respaldos periódicos (`Descargar respaldo`); es la única copia fuera de Firestore.
@@ -159,16 +144,16 @@ Las rutas de la app son relativas, así que funciona dentro de `/tu-repo/` sin c
 | Mensaje / síntoma | Qué revisar |
 |---|---|
 | `Missing or insufficient permissions` | ¿Publicaste las reglas? ¿Existe `usuarios/{uid}` con **el mismo UID** de Authentication? ¿`rol`/`estado` con la capitalización exacta (`Admin`, `Activo`)? |
-| Mensaje "Tu cuenta está pendiente de aprobación" | El perfil está en `pendiente`: un admin debe activarlo. |
-| "Tu cuenta está inactiva" | El admin la dejó en `inactivo`. |
-| El usuario inicia sesión con Google y no entra | Primera vez: se crea `pendiente`; falta la aprobación. |
+| Mensaje "Tu cuenta está pendiente de aprobación" | El perfil está en `Pendiente`: un admin debe activarlo. |
+| "Tu cuenta está inactiva" | El admin la dejó en `Inactivo`. |
+| El usuario inicia sesión con Google y no entra | Primera vez: se crea `Pendiente`; falta la aprobación. |
 | `auth/unauthorized-domain` | Falta el dominio en *Authorized domains* (§3.3). |
 | `auth/operation-not-allowed` | El método (correo o Google) no está habilitado (§3.2). |
 | `auth/invalid-api-key` / config vacía | `js/firebase-config.js` sin rellenar o con valores equivocados. |
 | `auth/popup-blocked` | El navegador bloqueó la ventana de Google; permite *pop-ups* para el sitio. |
 | Estadísticas de páginas en 0 | Los capítulos necesitan rango de páginas (inicio y fin) para sumar. |
 | El sitio publicado no refleja los cambios | Service worker/caché: recarga forzada (Ctrl+F5) o borra los datos del sitio. |
-| "Cargar respaldo" falla con permisos | Revisa que tus reglas sean las de `firestore.rules` (incluyen `getAfter`). |
+| "Cargar respaldo" falla con permisos | Revisa las reglas actualmente publicadas y que permitan, con autorización adecuada, las escrituras por lotes de la restauración. Este checkout no incluye un archivo de reglas que puedas comparar directamente. |
 
 ---
 
@@ -180,8 +165,8 @@ Las rutas de la app son relativas, así que funciona dentro de `/tu-repo/` sin c
 |---|---|---|
 | `email` | string | |
 | `nombre` | string | Nombre o apodo |
-| `rol` | string | `lector` \| `Admin` |
-| `estado` | string | `pendiente` \| `Activo` \| `inactivo` |
+| `rol` | string | `Lector` \| `Admin` |
+| `estado` | string | `Pendiente` \| `Activo` \| `Inactivo` |
 | `creadoEn` | timestamp | |
 
 ### `libros/{libroId}`
@@ -192,7 +177,7 @@ Las rutas de la app son relativas, así que funciona dentro de `/tu-repo/` sin c
 | `titulo`, `autor` | string | Obligatorios en el formulario |
 | `portadaUrl`, `url` | string | Portada y enlace de tienda |
 | `generos`, `etiquetas` | array<string> | |
-| `estado` | string | `pendiente` \| `leyendo` \| `pausado` \| `terminado` \| `descartado` |
+| `estado` | string | `Pendiente` \| `leyendo` \| `pausado` \| `terminado` \| `descartado` |
 | `formato` | string | `fisico` \| `digital` \| `audiolibro` |
 | `totalPaginas`, `paginaActual` | number | |
 | `fechaInicio`, `fechaFin` | string `AAAA-MM-DD` | |
