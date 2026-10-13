@@ -64,7 +64,13 @@ function esc(str) {
 const RELEVANCIA = { principal: "Principal", secundario: "Secundario", menor: "Menor", mencionado: "Solo mencionado" };
 const ORDEN_RELEVANCIA = ["principal", "secundario", "menor", "mencionado"];
 
-function htmlGuia(libro, sub) {
+// Tema con el que se abre la guía: el que tengas activo en la app al exportar.
+// La guía incluye ambos temas y un botón para alternarlos.
+function temaActual() {
+  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+}
+
+function htmlGuia(libro, sub, tema = "dark") {
   const pct = libro.totalPaginas ? Math.round((libro.paginaActual / libro.totalPaginas) * 100) : null;
 
   const capitulos = sub.capitulos.map(c => `
@@ -104,14 +110,17 @@ function htmlGuia(libro, sub) {
     contenido ? `<section><h2>${titulo}</h2><div class="${clase}">${contenido}</div></section>` : "";
 
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="${tema}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guía — ${esc(libro.titulo)}</title>
 <style>
-:root{--bg:#f4f6fa;--card:#fff;--text:#161a20;--muted:#677086;--line:#dde1e9;--accent:#3f6fd1;--accent-soft:rgba(63,111,209,.1);--oro:#b5791a}
-@media (prefers-color-scheme: dark){:root{--bg:#12151a;--card:#1b1f27;--text:#e7eaf0;--muted:#8992a3;--line:#2b303c;--accent:#5b8def;--accent-soft:rgba(91,141,239,.16);--oro:#e8b339}}
+:root,:root[data-theme="light"]{color-scheme:light;--bg:#f4f6fa;--card:#fff;--text:#161a20;--muted:#677086;--line:#dde1e9;--accent:#3f6fd1;--accent-soft:rgba(63,111,209,.1);--oro:#b5791a}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12151a;--card:#1b1f27;--text:#e7eaf0;--muted:#8992a3;--line:#2b303c;--accent:#5b8def;--accent-soft:rgba(91,141,239,.16);--oro:#e8b339}
+.tema{position:fixed;top:.8rem;right:.8rem;z-index:10;font:inherit;font-size:.8rem;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:.4rem .9rem;cursor:pointer}
+.tema:hover,.tema:focus-visible{border-color:var(--accent);outline:none}
+@media print{:root,:root[data-theme="dark"]{color-scheme:light;--bg:#fff;--card:#fff;--text:#161a20;--muted:#677086;--line:#dde1e9;--accent:#3f6fd1;--accent-soft:rgba(63,111,209,.1);--oro:#b5791a}.tema{display:none}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 header{padding:2rem 1.2rem 1.2rem;max-width:1000px;margin:0 auto;border-bottom:1px solid var(--line)}
@@ -145,6 +154,7 @@ footer.pie{text-align:center;color:var(--muted);font-size:.75rem;padding:1rem}
 </style>
 </head>
 <body>
+<button type="button" id="tema" class="tema" aria-label="${tema === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}">${tema === "dark" ? "☀️ Claro" : "🌙 Oscuro"}</button>
 <header>
   <h1>${esc(libro.titulo)}</h1>
   <p>${esc(libro.autor)}${libro.generos?.length ? " · " + libro.generos.map(esc).join(", ") : ""}</p>
@@ -158,6 +168,7 @@ footer.pie{text-align:center;color:var(--muted);font-size:.75rem;padding:1rem}
   ${libro.notas || libro.observaciones ? `<section><h2>Notas</h2><div class="notas">${libro.notas ? `<h3>Notas</h3><div class="fmt">${renderizarHTML(libro.notas)}</div>` : ""}${libro.observaciones ? `<h3>Observaciones</h3><div class="fmt">${renderizarHTML(libro.observaciones)}</div>` : ""}</div></section>` : ""}
 </main>
 <footer class="pie">Generado el ${fechaHoy()} desde Bitácora de lectura</footer>
+<script>(function(){var r=document.documentElement,b=document.getElementById("tema");function ap(t){r.setAttribute("data-theme",t);b.textContent=t==="dark"?"☀️ Claro":"🌙 Oscuro";b.setAttribute("aria-label",t==="dark"?"Cambiar a tema claro":"Cambiar a tema oscuro");}b.addEventListener("click",function(){ap(r.getAttribute("data-theme")==="dark"?"light":"dark");});})();</script>
 </body>
 </html>`;
 }
@@ -167,5 +178,5 @@ export async function exportarGuia(libroId) {
   if (!libro) throw new Error("Libro no encontrado");
   const nombre = libro.titulo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "libro";
-  descargar(`guia-${nombre}.html`, htmlGuia(limpiar(libro), limpiar(sub)), "text/html");
+  descargar(`guia-${nombre}.html`, htmlGuia(limpiar(libro), limpiar(sub), temaActual()), "text/html");
 }
