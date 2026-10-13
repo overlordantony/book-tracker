@@ -13,6 +13,7 @@ const PIE = {
   // Enlaces extra
   instagram: { texto: "", url: "https://www.instagram.com/overlordantony/" },
   x: { texto: "", url: "https://x.com/overlordantony" },
+  instalacion: { texto: "Instalar App", url: "#", id: "btn-instalar" },
 
   extras: [
     { texto: "Enlace 1", url: "#" },
@@ -32,10 +33,16 @@ const ICONO_INSTAGRAM =
 // Icono X (cadena)
 const ICONO_X =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+// Icono de instalación (Download)
+const ICONO_DESCARGA =
+  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
-function crearEnlace({ texto, url }, iconoSvg) {
+
+function crearEnlace({ texto, url, id }, iconoSvg) {
   const a = document.createElement("a");
   a.className = "pie-enlace";
+  // si lleva id (como el botón de instalación), lo añadimos al enlace
+  if (id) a.id = id;
   a.href = url || "#";
   // Con "#" (placeholder) no abrimos pestaña nueva; con una URL real sí.
   if (a.getAttribute("href") !== "#") {
@@ -64,8 +71,9 @@ function montarPie() {
   nav.className = "pie-enlaces";
   nav.setAttribute("aria-label", "Enlaces del proyecto");
   nav.appendChild(crearEnlace(PIE.github, ICONO_GITHUB));
-  nav.appendChild(crearEnlace(PIE.x, ICONO_X));
+  nav.appendChild(crearEnlace(PIE.instalacion, ICONO_DESCARGA));
   nav.appendChild(crearEnlace(PIE.instagram, ICONO_INSTAGRAM));
+  nav.appendChild(crearEnlace(PIE.x, ICONO_X));
   //(PIE.extras || []).slice(0, 2).forEach(e => nav.appendChild(crearEnlace(e, ICONO_INSTAGRAM)));
 
   pie.append(texto, nav);
@@ -77,3 +85,36 @@ if (document.readyState === "loading") {
 } else {
   montarPie();
 }
+
+// --- LÓGICA DE INSTALACIÓN PWA ---
+let deferredPrompt;
+
+// 1. Guardar el evento del navegador cuando la app es instalable
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('btn-instalar');
+  if (btn) btn.hidden = false;
+});
+
+// 2. Escuchar el clic del botón sin importar cuándo se inyecte en el DOM
+document.addEventListener('click', async (e) => {
+  if (!e.target.closest('#btn-instalar')) return;
+  if (!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+
+  if (outcome === 'accepted') {
+    const btn = document.getElementById('btn-instalar');
+    if (btn) btn.hidden = true;
+  }
+  deferredPrompt = null;
+});
+
+// 3. Ocultar el botón si el sistema confirma la instalación
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('btn-instalar');
+  if (btn) btn.hidden = true;
+  deferredPrompt = null;
+});
