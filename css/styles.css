@@ -765,3 +765,165 @@ input[type="search"]{ -webkit-appearance: none; appearance: none; }
 }
 
 #linkMostrarRegistro, #linkOlvide { color: var(--accent); }
+
+/* ===================================================================
+   Fases 0–3: accesibilidad, biblioteca (filtros / cuadrícula), papelera,
+   resumen del libro y editor de texto con formato.
+   =================================================================== */
+
+/* --- Accesibilidad general --- */
+a:focus-visible, button:focus-visible, summary:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.solo-lectores{
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+@media (pointer: coarse){
+  .boton-fantasma, .boton-peligro, .boton-principal, .segmento, .pestaña, .editor-boton, .chip-filtro{ min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+/* --- Biblioteca: búsqueda, vista y filtros --- */
+.fila-busqueda{ display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.fila-busqueda input[type="search"]{ flex: 1 1 220px; min-width: 0; }
+.fila-busqueda select{ flex: 0 1 170px; min-width: 0; }
+
+.panel-filtros{
+  border: 1px solid var(--linea); border-radius: var(--radio);
+  background: var(--superficie); padding: .15rem .8rem;
+}
+.panel-filtros summary{ cursor: pointer; padding: .55rem 0; font-size: .9rem; font-weight: 600; }
+.filtros-grid{
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: .6rem .8rem; padding: .2rem 0 .8rem;
+}
+.filtros-grid label{ display: flex; flex-direction: column; gap: .25rem; font-size: .78rem; color: var(--muted); }
+.filtros-grid select{ width: 100%; min-width: 0; }
+
+.contador-pestaña{
+  display: inline-block; min-width: 1.4em; padding: 0 .4em; margin-left: .2em;
+  border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: .7rem; font-weight: 700; line-height: 1.5; text-align: center;
+}
+.filtros-activos{ display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.chip-filtro{
+  font-family: inherit; font-size: .78rem; color: var(--texto);
+  background: var(--accent-suave); border: 1px solid var(--accent);
+  border-radius: 999px; padding: .2rem .65rem; cursor: pointer;
+}
+.chip-filtro:hover{ background: var(--superficie-2); }
+
+.mas-libros{ display: flex; justify-content: center; margin-top: 1rem; }
+
+/* --- Tarjetas de libro (enlaces reales) --- */
+a.fila-libro{ color: inherit; text-decoration: none; }
+.mini-progreso{ width: 100%; min-width: 90px; height: 5px; margin-top: .1rem; }
+
+/* Vista cuadrícula */
+.lista-libros.vista-cuadricula{
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .9rem;
+}
+.lista-libros.vista-cuadricula .fila-libro{
+  display: flex; flex-direction: column; align-items: stretch; gap: .6rem;
+  padding: .7rem; border-left-width: 1px; border-top: 4px solid var(--linea);
+}
+.lista-libros.vista-cuadricula .fila-libro.estado-leyendo{ border-top-color: var(--accent); }
+.lista-libros.vista-cuadricula .fila-libro.estado-terminado{ border-top-color: var(--verde); }
+.lista-libros.vista-cuadricula .fila-libro.estado-pausado{ border-top-color: var(--oro); }
+.lista-libros.vista-cuadricula .fila-libro.estado-descartado{ border-top-color: var(--vino); }
+.lista-libros.vista-cuadricula .portada-mini{ width: 100%; font-size: 2rem; }
+.lista-libros.vista-cuadricula .fila-libro h3{ font-size: .92rem; }
+.lista-libros.vista-cuadricula .fila-libro-datos{
+  grid-column: auto; flex-direction: row; flex-wrap: wrap; justify-content: space-between;
+  align-items: center; gap: .3rem .6rem;
+}
+.lista-libros.vista-cuadricula .mini-progreso{ flex: 1 1 100%; }
+.lista-libros.vista-cuadricula .generos{ display: none; }
+
+/* --- Papelera y acciones destructivas --- */
+.boton-borrar{ color: var(--vino); border-color: var(--vino); }
+.boton-borrar:hover{ background: var(--vino-suave); border-color: var(--vino); color: var(--texto); }
+.aviso-papelera{
+  margin: 0 0 1rem; padding: .7rem .9rem; font-size: .88rem;
+  background: var(--vino-suave); border-left: 3px solid var(--vino); border-radius: var(--radio-sm);
+}
+.aviso-papelera p{ margin: 0; }
+.aviso-papelera .acciones-libro{ margin-top: .6rem; }
+.estado-accion{ margin: 0 0 1rem; font-size: .88rem; color: var(--verde); }
+.estado-accion.error{ color: var(--vino); }
+.acciones-papelera{ flex-direction: row !important; flex-wrap: wrap; align-items: center !important; justify-content: flex-end; }
+.ayuda-estados{
+  margin-top: 1.2rem; padding: .3rem .9rem; font-size: .86rem;
+  border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie);
+}
+.ayuda-estados summary{ cursor: pointer; padding: .5rem 0; font-weight: 600; }
+.ayuda-estados li{ margin-bottom: .45rem; }
+
+/* --- Resumen del libro (detalle) --- */
+.resumen-detalle{ margin-top: 1.2rem; display: grid; gap: 1rem; }
+.panel-notas, .panel-actividad{
+  background: var(--superficie); border: 1px solid var(--linea);
+  border-radius: var(--radio); padding: .9rem 1.1rem;
+}
+.panel-notas .titulo-seccion, .panel-actividad .titulo-seccion{ margin: 0 0 .4rem; }
+.panel-notas .titulo-seccion:not(:first-child){ margin-top: .9rem; }
+.actividad{ margin: 0; display: grid; gap: .35rem; font-size: .86rem; }
+.actividad div{ display: flex; flex-wrap: wrap; gap: .2rem .8rem; justify-content: space-between; }
+.actividad dt{ color: var(--muted); }
+.actividad dd{ margin: 0; }
+.etiqueta-campo{ font-size: .8rem; color: var(--muted); margin-top: .3rem; }
+
+/* --- Texto con formato (notas, resúmenes, descripciones) --- */
+.texto-formato{ overflow-wrap: anywhere; }
+.texto-formato p{ margin: .4rem 0 0; }
+.texto-formato > :first-child{ margin-top: 0; }
+.texto-formato ul, .texto-formato ol{ margin: .4rem 0 0; padding-left: 1.3rem; font-size: .88rem; }
+.texto-formato li{ margin-bottom: .2rem; }
+.texto-formato mark{ background: rgba(232,179,57,.38); color: inherit; padding: 0 .15em; border-radius: 3px; }
+.texto-formato a{ color: var(--accent); }
+.item-sub .texto-formato.meta{ font-size: .78rem; color: var(--muted); }
+
+/* --- Editor con barra de formato --- */
+.editor-formato{ display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
+.editor-formato textarea{ width: 100%; }
+.editor-barra{ display: flex; flex-wrap: wrap; gap: .3rem; }
+.editor-boton{
+  font-family: inherit; font-size: .8rem; color: var(--texto);
+  background: var(--superficie-2); border: 1px solid var(--linea);
+  border-radius: var(--radio-sm); padding: .25rem .55rem; min-width: 2rem; cursor: pointer;
+}
+.editor-boton:hover:not(:disabled){ border-color: var(--accent); }
+.editor-boton:disabled{ opacity: .5; cursor: default; }
+.editor-boton-vista{ margin-left: auto; }
+.editor-boton[aria-pressed="true"]{ background: var(--accent); border-color: var(--accent); color: #fff; }
+.editor-vista{
+  min-height: 4rem; padding: .6rem .7rem; font-size: .9rem;
+  background: var(--superficie-2); border: 1px dashed var(--linea); border-radius: var(--radio-sm);
+}
+.editor-ayuda{ font-size: .76rem; color: var(--muted); }
+.editor-ayuda summary{ cursor: pointer; }
+.editor-ayuda p{ margin: .3rem 0 0; }
+.editor-ayuda code{ font-family: "IBM Plex Mono", monospace; font-size: .74rem; background: var(--superficie-2); padding: 0 .25em; border-radius: 3px; }
+
+/* --- Estadísticas: leyenda y tabla de datos --- */
+.leyenda-grafica{ margin: .4rem 0 0; font-size: .74rem; color: var(--muted); }
+.leyenda-muestra{
+  display: inline-block; width: .7rem; height: .7rem; border-radius: 2px;
+  background: var(--accent-hover); vertical-align: -.05rem;
+}
+.datos-grafica{ margin-top: .3rem; font-size: .78rem; color: var(--muted); }
+.datos-grafica summary{ cursor: pointer; }
+.datos-grafica table{ width: 100%; border-collapse: collapse; margin-top: .4rem; color: var(--texto); }
+.datos-grafica th, .datos-grafica td{ text-align: left; padding: .25rem .4rem; border-bottom: 1px solid var(--linea); font-weight: 400; }
+.datos-grafica thead th{ font-weight: 700; color: var(--muted); }
+.datos-grafica td{ text-align: right; }
+
+@media (max-width: 560px){
+  .fila-busqueda select{ flex: 1 1 140px; }
+  .lista-libros.vista-cuadricula{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+  .acciones-papelera{ grid-column: 1 / -1; justify-content: flex-start; }
+}

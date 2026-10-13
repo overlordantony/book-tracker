@@ -40,33 +40,80 @@
     <button class="pestaña activa" data-vista="biblioteca">Biblioteca</button>
     <button class="pestaña" data-vista="estadisticas">Estadísticas</button>
     <button class="pestaña" data-vista="citas">Citas</button>
+    <button class="pestaña" id="pestañaPapelera" data-vista="papelera">Papelera <span id="contadorPapelera" class="contador-pestaña" hidden></span></button>
     <button class="pestaña" id="pestañaAgregar" data-vista="agregar">Agregar libro</button>
   </nav>
 
   <main>
     <section id="vistaBiblioteca" class="vista">
       <div class="barra-herramientas">
-        <input type="search" id="buscador" placeholder="Buscar por título, autor, género o etiqueta…">
-        <div class="filtros">
-          <select id="filtroEstado">
-            <option value="">Todos los estados</option>
-            <option value="leyendo">Leyendo</option>
-            <option value="Pendiente">Pendiente</option>
-            <option value="pausado">Pausado</option>
-            <option value="terminado">Terminado</option>
-            <option value="descartado">Descartado</option>
-          </select>
-          <select id="filtroEtiqueta"><option value="">Géneros y etiquetas</option></select>
-          <select id="orden">
+        <div class="fila-busqueda">
+          <input type="search" id="buscador" placeholder="Buscar por título, autor, género o etiqueta…" aria-label="Buscar libros">
+          <select id="orden" aria-label="Ordenar por">
             <option value="reciente">Más reciente</option>
             <option value="titulo">Título (A–Z)</option>
             <option value="autor">Autor (A–Z)</option>
             <option value="progreso">% leído</option>
             <option value="calificacion">Calificación</option>
           </select>
+          <div class="segmentos" role="group" aria-label="Tipo de vista">
+            <button type="button" id="btnVistaLista" class="segmento activo" aria-pressed="true">Lista</button>
+            <button type="button" id="btnVistaCuadricula" class="segmento" aria-pressed="false">Cuadrícula</button>
+          </div>
         </div>
+
+        <details class="panel-filtros" id="panelFiltros">
+          <summary>Filtros <span id="contadorFiltros" class="contador-pestaña" hidden></span></summary>
+          <div class="filtros-grid">
+            <label>Estado
+              <select id="filtroEstado">
+                <option value="">Todos</option>
+                <option value="leyendo">Leyendo</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="pausado">Pausado</option>
+                <option value="terminado">Terminado</option>
+                <option value="descartado">Descartado</option>
+              </select>
+            </label>
+            <label>Género
+              <select id="filtroGenero"><option value="">Todos</option></select>
+            </label>
+            <label>Etiqueta
+              <select id="filtroEtiqueta"><option value="">Todas</option></select>
+            </label>
+            <label>Formato
+              <select id="filtroFormato">
+                <option value="">Todos</option>
+                <option value="fisico">Físico</option>
+                <option value="digital">Digital</option>
+                <option value="audiolibro">Audiolibro</option>
+              </select>
+            </label>
+            <label>Calificación
+              <select id="filtroCalificacion">
+                <option value="">Cualquiera</option>
+                <option value="5">5 ★</option>
+                <option value="4+">4 ★ o más</option>
+                <option value="3+">3 ★ o más</option>
+                <option value="sin">Sin calificar</option>
+              </select>
+            </label>
+            <label>Progreso
+              <select id="filtroProgreso">
+                <option value="">Cualquiera</option>
+                <option value="no-iniciado">No iniciado (0 %)</option>
+                <option value="en-curso">En curso (1–99 %)</option>
+                <option value="completo">Completo (100 %)</option>
+                <option value="sin-total">Sin total de páginas</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
+        <div id="filtrosActivos" class="filtros-activos" hidden></div>
+
         <div class="resumen-filtro">
-          <span id="contadorLibros" class="num"></span>
+          <span id="contadorLibros" class="num" role="status" aria-live="polite"></span>
           <div class="botones-respaldo">
             <button type="button" id="btnRespaldo" class="boton-fantasma">Descargar respaldo</button>
             <button type="button" id="btnCargarRespaldo" class="boton-fantasma">Cargar respaldo</button>
@@ -77,6 +124,16 @@
       </div>
       <p id="bibliotecaVacia" class="vacio" hidden></p>
       <div id="listaLibros" class="lista-libros"></div>
+      <div class="mas-libros"><button type="button" id="btnMasLibros" class="boton-fantasma" hidden></button></div>
+    </section>
+
+    <section id="vistaPapelera" class="vista" hidden>
+      <p class="aviso-papelera">Los libros de la papelera no aparecen en la biblioteca, las estadísticas ni las citas.
+        Puedes <strong>restaurarlos</strong> o <strong>eliminarlos definitivamente</strong>; esto último borra también
+        sus capítulos, personajes, citas y conceptos y no se puede deshacer.</p>
+      <p id="estadoPapelera" class="estado-accion" role="status" aria-live="polite" hidden></p>
+      <p id="papeleraVacia" class="vacio" hidden>La papelera está vacía.</p>
+      <div id="listaPapelera" class="lista-libros"></div>
     </section>
 
     <section id="vistaEstadisticas" class="vista" hidden>

@@ -37,6 +37,15 @@
     <a href="app.html" id="linkVolver" class="volver">← Volver a la biblioteca</a>
     <p id="avisoSoloLectura" class="vacio" hidden>Estás viendo este libro en modo solo lectura.</p>
 
+    <div id="avisoPapelera" class="aviso-papelera" hidden>
+      <p id="textoPapelera">Este libro está en la papelera: no aparece en tu biblioteca ni en las estadísticas.</p>
+      <div class="acciones-libro">
+        <button type="button" id="btnRestaurarLibro" class="boton-fantasma">Restaurar libro</button>
+        <button type="button" id="btnEliminarDefinitivo" class="boton-fantasma boton-borrar">Eliminar definitivamente</button>
+      </div>
+    </div>
+    <p id="errorAccionLibro" class="error" role="alert" hidden></p>
+
     <div class="cabecera-detalle-cuerpo">
       <img id="portadaLibro" class="portada-grande" hidden alt="">
       <div>
@@ -50,6 +59,7 @@
     <div class="acciones-libro">
       <button id="btnEditarLibro" class="boton-fantasma">Editar libro</button>
       <button id="btnExportarGuia" class="boton-fantasma">Exportar guía</button>
+      <button id="btnPapelera" class="boton-fantasma boton-borrar">Mover a la papelera</button>
     </div>
 
     <form id="formEditarLibro" class="formulario-mini" hidden style="margin-top:.9rem">
@@ -88,14 +98,23 @@
         <input type="date" id="editFechaFin">
       </div>
       <input type="number" id="editCalificacion" placeholder="Calificación (1-5)" min="1" max="5">
-      <textarea id="editNotas" rows="2" placeholder="Notas"></textarea>
+      <label class="etiqueta-campo" for="editNotas">Notas</label>
+      <textarea id="editNotas" rows="3" placeholder="Notas"></textarea>
+      <label class="etiqueta-campo" for="editObservaciones">Observaciones</label>
       <textarea id="editObservaciones" rows="2" placeholder="Observaciones"></textarea>
+      <p id="errorEditarLibro" class="error" role="alert" hidden></p>
       <div style="display:flex;gap:.6rem">
         <button type="submit" class="boton-principal">Guardar cambios</button>
         <button type="button" id="btnCancelarEditarLibro" class="boton-fantasma">Cancelar</button>
       </div>
     </form>
   </div>
+
+  <section class="resumen-detalle" aria-label="Resumen del libro">
+    <div id="resumenTiles"></div>
+    <div id="panelNotas" class="panel-notas"></div>
+    <div id="panelActividad" class="panel-actividad"></div>
+  </section>
 
   <nav class="subpestañas">
     <button class="pestaña activa" data-vista="capitulos">Capítulos</button>
@@ -116,7 +135,7 @@
           <input type="number" id="capPagInicio" placeholder="Página inicio">
           <input type="number" id="capPagFin" placeholder="Página fin">
         </div>
-        <textarea id="capResumen" rows="2" placeholder="Resumen"></textarea>
+        <textarea id="capResumen" rows="3" placeholder="Resumen"></textarea>
         <input type="text" id="capPuntos" placeholder="Puntos clave, separados por coma">
         <div style="display:flex;gap:.6rem">
           <button type="submit" class="boton-principal">Agregar capítulo</button>
@@ -139,7 +158,7 @@
           <option value="mencionado">Solo mencionado</option>
         </select>
         <input type="text" id="perAlias" placeholder="Alias/otros nombres, separados por coma">
-        <textarea id="perDescripcion" rows="2" placeholder="Descripción"></textarea>
+        <textarea id="perDescripcion" rows="3" placeholder="Descripción"></textarea>
         <input type="text" id="perConexiones" placeholder="Asócialo con: ...">
         <div style="display:flex;gap:.6rem">
           <button type="submit" class="boton-principal">Agregar personaje</button>
@@ -156,7 +175,7 @@
           <input type="number" id="citaPagina" placeholder="Página">
           <input type="text" id="citaEtiqueta" placeholder="Etiqueta (ej. filosófica, de vida...)">
         </div>
-        <input type="text" id="citaNota" placeholder="Nota (opcional)">
+        <textarea id="citaNota" rows="2" placeholder="Nota (opcional)"></textarea>
         <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--muted)">
           <input type="checkbox" id="citaFavorita" style="width:auto">
           Marcar como favorita (lista para compartir)
@@ -172,7 +191,7 @@
     <section id="vistaConceptos" class="vista" hidden>
       <form id="formConcepto" class="formulario-mini">
         <input type="text" id="conNombre" placeholder="Concepto..." required>
-        <textarea id="conSignificado" rows="2" placeholder="Qué recordar sobre este concepto"></textarea>
+        <textarea id="conSignificado" rows="3" placeholder="Qué recordar sobre este concepto"></textarea>
         <div style="display:flex;gap:.6rem">
           <button type="submit" class="boton-principal">Agregar concepto</button>
           <button type="button" id="btnCancelarConcepto" class="boton-fantasma" hidden>Cancelar edición</button>

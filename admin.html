@@ -53,6 +53,17 @@
         <button type="button" id="btnRespaldoTotal" class="boton-fantasma">Descargar respaldo de todos los usuarios</button>
       </div>
 
+      <details class="ayuda-estados">
+        <summary>¿Qué significa cada estado y qué se puede hacer con una cuenta?</summary>
+        <ul>
+          <li><strong>Pendiente:</strong> la persona se registró sola y espera tu aprobación. Puede iniciar sesión, pero no usar la bitácora.</li>
+          <li><strong>Activo:</strong> acceso normal. Un Lector solo ve y edita sus propios libros; un Admin además puede ver las bibliotecas de los demás (solo lectura).</li>
+          <li><strong>Inactivo:</strong> bloquea el acceso a la bitácora. Sus libros y datos se conservan y puede reactivarse.</li>
+          <li><strong>Eliminar una cuenta por completo</strong> (acceso y datos) no se puede hacer desde esta página: requiere una Cloud Function con permisos de administrador de Firebase.
+            Mientras tanto, usa <em>Inactivo</em>; si hace falta borrarla del todo, se hace manualmente en la consola de Firebase (Authentication y Firestore).</li>
+        </ul>
+      </details>
+
       <h3 style="margin: 1.6rem 0 .8rem; font-size: 1rem;">Usuarios</h3>
       <div id="listaUsuarios"></div>
     </section>

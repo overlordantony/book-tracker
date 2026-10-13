@@ -41,6 +41,10 @@ function inicioSemana(fecha) {
   return d;
 }
 
+function fechaLarga(d) {
+  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+}
+
 function sumarDias(fecha, dias) {
   const d = new Date(fecha);
   d.setDate(d.getDate() + dias);
@@ -93,7 +97,7 @@ function serieMensual(items, año) {
   const valores = Array(12).fill(0);
   items.forEach(({ fecha, valor }) => { if (fecha.getFullYear() === año) valores[fecha.getMonth()] += valor; });
   const mesActual = new Date().getFullYear() === año ? new Date().getMonth() : -1;
-  return { etiquetas: MESES, valores, actual: mesActual, titulos: MESES_LARGOS.map(m => `${m} ${año}`) };
+  return { etiquetas: MESES, valores, actual: mesActual, titulos: MESES_LARGOS.map(m => `${m} ${año}`), rango: `enero–diciembre de ${año}` };
 }
 
 function serieAnual(items, años) {
@@ -103,7 +107,8 @@ function serieAnual(items, años) {
     etiquetas: lista.map(a => "’" + String(a).slice(-2)),
     valores,
     actual: lista.indexOf(new Date().getFullYear()),
-    titulos: lista.map(String)
+    titulos: lista.map(String),
+    rango: lista.length > 1 ? `${lista[0]}–${lista[lista.length - 1]}` : String(lista[0] ?? "")
   };
 }
 
@@ -121,7 +126,8 @@ function serieSemanal(items) {
     valores,
     actual: SEMANAS_EN_GRAFICA - 1,
     titulos: lunes.map(d => `Semana del ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`),
-    semanal: true
+    semanal: true,
+    rango: `del ${fechaLarga(lunes[0])} al ${fechaLarga(sumarDias(lunesActual, 6))}`
   };
 }
 
@@ -160,19 +166,37 @@ function segmentos(grupo, opciones, activo) {
   </div>`;
 }
 
-function grafica(serie) {
-  // Sin ningún dato en el rango → mensaje en vez de una gráfica vacía.
-  if (!serie.valores.some(v => v > 0)) return `<p class="sin-datos">Sin datos</p>`;
+// opciones: { nombre, unidad, vacio }
+//  - nombre/unidad: alimentan la descripción accesible, la leyenda y la tabla de datos.
+//  - vacio: mensaje (qué hacer para ver datos) cuando no hay nada en el rango.
+function grafica(serie, { nombre = "Gráfica", unidad = "", vacio = "Sin datos en este período." } = {}) {
+  // Sin ningún dato en el rango → mensaje útil en vez de una gráfica vacía.
+  if (!serie.valores.some(v => v > 0)) return `<p class="sin-datos">${escapeHtml(vacio)}</p>`;
+
   const max = Math.max(...serie.valores, 1);
+  const total = serie.valores.reduce((a, b) => a + b, 0);
+  const iMax = serie.valores.indexOf(Math.max(...serie.valores));
+  const sufijo = unidad ? " " + unidad : "";
+  const resumen = `${nombre}${serie.rango ? ` (${serie.rango})` : ""}: ${fmt(total)}${sufijo} en total; el valor más alto es ${fmt(max)}${sufijo} en ${serie.titulos[iMax]}.`;
+
   return `
-    <div class="barras-mes${serie.semanal ? " barras-semana" : ""}" style="--cols:${serie.valores.length}">
+    <div class="barras-mes${serie.semanal ? " barras-semana" : ""}" style="--cols:${serie.valores.length}" role="img" aria-label="${escapeHtml(resumen)}">
       ${serie.valores.map((n, i) => `
-        <div class="barra-mes${i === serie.actual ? " actual" : ""}" title="${escapeHtml(serie.titulos[i])}: ${fmt(n)}">
+        <div class="barra-mes${i === serie.actual ? " actual" : ""}" title="${escapeHtml(serie.titulos[i])}: ${fmt(n)}" aria-hidden="true">
           <span class="num barra-mes-n">${n ? corto(n) : ""}</span>
           <div class="barra-mes-col"><div class="barra-mes-relleno" style="height:${n ? Math.max((n / max) * 100, 4) : 0}%"></div></div>
           <span class="barra-mes-etq">${escapeHtml(serie.etiquetas[i])}</span>
         </div>`).join("")}
-    </div>`;
+    </div>
+    <p class="leyenda-grafica">${serie.actual >= 0 ? `<span class="leyenda-muestra" aria-hidden="true"></span> Período actual resaltado · ` : ""}Altura proporcional al máximo (${fmt(max)}${sufijo})${serie.rango ? ` · ${escapeHtml(serie.rango)}` : ""}</p>
+    <details class="datos-grafica">
+      <summary>Ver datos como tabla</summary>
+      <table>
+        <caption class="solo-lectores">${escapeHtml(nombre)}</caption>
+        <thead><tr><th scope="col">Período</th><th scope="col">Valor${unidad ? ` (${escapeHtml(unidad)})` : ""}</th></tr></thead>
+        <tbody>${serie.valores.map((n, i) => `<tr><th scope="row">${escapeHtml(serie.titulos[i])}</th><td class="num">${fmt(n)}</td></tr>`).join("")}</tbody>
+      </table>
+    </details>`;
 }
 
 // ---------- Estado y render ----------
@@ -190,7 +214,7 @@ function cargarCapitulos(libros) {
 export async function renderEstadisticas(libros, contenedor) {
   if (!libros.length) {
     estadoPorContenedor.delete(contenedor);
-    contenedor.innerHTML = `<p class="vacio">Agrega algunos libros para ver tus estadísticas.</p>`;
+    contenedor.innerHTML = `<p class="vacio">Agrega algunos libros para ver tus estadísticas. Los libros que están en la papelera no se cuentan.</p>`;
     return;
   }
 
@@ -307,7 +331,7 @@ function pintar(contenedor, ui) {
         { valor: totLibros.año, etiqueta: `Este año (${añoActual})` }
       ])}
       <p class="estad-nota">${ui.periodoLibros === "anual" ? "Libros por año" : `Libros por mes · ${año}`} · según la fecha en que se agregó cada libro</p>
-      ${grafica(serieLibros)}
+      ${grafica(serieLibros, { nombre: "Libros agregados", unidad: "libros", vacio: "Todavía no hay libros agregados en este rango. Agrega un libro desde «Agregar libro» para verlo aquí." })}
     </section>
 
     <section class="estad-seccion">
@@ -320,7 +344,7 @@ function pintar(contenedor, ui) {
         { valor: totPaginas.mes, etiqueta: "Este mes" }
       ])}
       <p class="estad-nota">${ui.periodoPaginas === "mensual" ? `Páginas por mes · ${año}` : `Páginas por semana · últimas ${SEMANAS_EN_GRAFICA}`} · suma de los rangos de páginas de los capítulos, según cuándo se registró cada capítulo</p>
-      ${grafica(seriePaginas)}
+      ${grafica(seriePaginas, { nombre: "Páginas por capítulos", unidad: "páginas", vacio: "Aún no hay páginas registradas en este rango. Agrega capítulos con rango de páginas (inicio y fin) dentro de un libro para verlas aquí." })}
       ${ui.fallidos ? `<p class="estad-nota">No se pudieron leer los capítulos de ${ui.fallidos} libro${ui.fallidos === 1 ? "" : "s"}; esos datos no se incluyen.</p>` : ""}
     </section>
 
@@ -334,18 +358,18 @@ function pintar(contenedor, ui) {
         { valor: totSeguimiento.semanaPasada, etiqueta: "Semana pasada" }
       ])}
       <p class="estad-nota">Páginas por semana · últimas ${SEMANAS_EN_GRAFICA} · página actual de los libros cuyo seguimiento se actualizó esa semana</p>
-      ${grafica(serieSeguimiento)}
+      ${grafica(serieSeguimiento, { nombre: "Páginas de seguimiento", unidad: "páginas", vacio: "Sin actividad de seguimiento en estas semanas. Actualiza la «página actual» de un libro que estés leyendo para verla aquí." })}
     </section>
 
     <h3 class="titulo-seccion">Terminados por mes · ${año}</h3>
-    ${grafica(serieTerminados)}
+    ${grafica(serieTerminados, { nombre: `Libros terminados en ${año}`, unidad: "libros", vacio: `Aún no hay libros terminados en ${año}. Marca un libro como «terminado» (con fecha de fin) para verlo aquí.` })}
 
     <h3 class="titulo-seccion">Por estado</h3>
     <div class="estados-resumen">
       ${ESTADOS.map(([k, etq]) => `
         <div class="estado-fila">
           <span>${etq}</span>
-          <div class="estado-barra"><div class="estado-barra-relleno estado-${k}" style="width:${(conteo[k] / libros.length) * 100}%"></div></div>
+          <div class="estado-barra"><div class="estado-barra-relleno estado-${k.toLowerCase()}" style="width:${(conteo[k] / libros.length) * 100}%"></div></div>
           <span class="num">${conteo[k]}</span>
         </div>`).join("")}
     </div>

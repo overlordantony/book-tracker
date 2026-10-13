@@ -9,7 +9,9 @@ import {
   query,
   where,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  deleteField,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { db, auth } from "./firebase-init.js";
 
@@ -54,8 +56,69 @@ export function actualizarLibro(libroId, cambios) {
   });
 }
 
-export function eliminarLibro(libroId) {
-  return deleteDoc(doc(db, "libros", libroId));
+// --- Papelera y eliminación de libros ---------------------------------
+//
+// Eliminar un libro es un proceso de dos pasos:
+//   1) moverALaPapelera(): borrado lógico (campo "eliminadoEn"). Es reversible y
+//      no cambia "actualizadoEn", así que no altera las estadísticas.
+//   2) eliminarLibroDefinitivo(): solo para libros que ya están en la papelera.
+//      Borra primero capítulos, personajes, citas y conceptos y al final el libro.
+//      El orden importa: las reglas de Firestore comprueban el dueño leyendo el
+//      libro padre, así que el padre debe existir mientras se borran sus ítems.
+//      Si se interrumpe a medias el libro sigue en la papelera y basta con repetir.
+
+export const SUBCOLECCIONES = ["capitulos", "personajes", "citas", "conceptos"];
+const MAX_OPS_POR_LOTE = 400; // Firestore admite 500 operaciones por lote
+
+export function enPapelera(libro) {
+  return Boolean(libro && libro.eliminadoEn);
+}
+
+export function moverALaPapelera(libroId) {
+  return updateDoc(doc(db, "libros", libroId), { eliminadoEn: serverTimestamp() });
+}
+
+export function restaurarDePapelera(libroId) {
+  return updateDoc(doc(db, "libros", libroId), { eliminadoEn: deleteField() });
+}
+
+// Cuántos elementos tiene cada subcolección (para avisar antes de borrar).
+export async function contarContenido(libroId) {
+  const sub = await obtenerSubcolecciones(libroId);
+  return {
+    capitulos: sub.capitulos.length,
+    personajes: sub.personajes.length,
+    citas: sub.citas.length,
+    conceptos: sub.conceptos.length
+  };
+}
+
+// onProgreso(hechas, total) se llama tras cada lote.
+export async function eliminarLibroDefinitivo(libroId, onProgreso) {
+  const libro = await obtenerLibro(libroId);
+  if (!libro) return { items: 0 }; // ya no existe: nada que hacer
+  if (!enPapelera(libro)) {
+    throw new Error("Solo se pueden eliminar definitivamente los libros que están en la papelera.");
+  }
+
+  const porSub = await Promise.all(SUBCOLECCIONES.map(n => getDocs(subcoleccion(libroId, n))));
+  const refs = porSub.flatMap(snap => snap.docs.map(d => d.ref));
+  const total = refs.length + 1;
+  let hechas = 0;
+  onProgreso?.(hechas, total);
+
+  for (let i = 0; i < refs.length; i += MAX_OPS_POR_LOTE) {
+    const trozo = refs.slice(i, i + MAX_OPS_POR_LOTE);
+    const lote = writeBatch(db);
+    trozo.forEach(ref => lote.delete(ref));
+    await lote.commit();
+    hechas += trozo.length;
+    onProgreso?.(hechas, total);
+  }
+
+  await deleteDoc(doc(db, "libros", libroId));
+  onProgreso?.(total, total);
+  return { items: refs.length };
 }
 
 // --- Subcolecciones genéricas: capitulos, personajes, citas ---

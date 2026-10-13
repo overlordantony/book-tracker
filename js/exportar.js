@@ -4,6 +4,7 @@ import {
   obtenerTodosLosLibros,
   obtenerSubcolecciones
 } from "./db.js";
+import { renderizarHTML } from "./formato.js";
 
 // Convierte Timestamps de Firestore (y cualquier estructura anidada)
 // a algo que JSON.stringify pueda escribir bien.
@@ -70,7 +71,7 @@ function htmlGuia(libro, sub) {
     <article class="card">
       <span class="badge">Capítulo ${esc(c.numero)}${c.rangoPaginas && (c.rangoPaginas.inicio || c.rangoPaginas.fin) ? ` · pág. ${esc(c.rangoPaginas.inicio ?? "?")}–${esc(c.rangoPaginas.fin ?? "?")}` : ""}</span>
       <h3>${esc(c.titulo || "Capítulo " + c.numero)}</h3>
-      ${c.resumen ? `<p>${esc(c.resumen)}</p>` : ""}
+      ${c.resumen ? `<div class="fmt">${renderizarHTML(c.resumen)}</div>` : ""}
       ${c.puntosClave?.length ? `<ul>${c.puntosClave.map(p => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
     </article>`).join("");
 
@@ -82,20 +83,21 @@ function htmlGuia(libro, sub) {
       <span class="badge">${esc(RELEVANCIA[p.relevancia] || p.relevancia || "")}</span>
       <h3>${esc(p.nombre)}${p.rol ? ` <small>· ${esc(p.rol)}</small>` : ""}</h3>
       ${p.alias?.length ? `<p class="meta">También: ${p.alias.map(esc).join(", ")}</p>` : ""}
-      ${p.descripcion ? `<p>${esc(p.descripcion)}</p>` : ""}
+      ${p.descripcion ? `<div class="fmt">${renderizarHTML(p.descripcion)}</div>` : ""}
       ${p.conexiones?.length ? `<p class="meta">${p.conexiones.map(esc).join(" → ")}</p>` : ""}
     </article>`).join("");
 
   const conceptos = sub.conceptos.map(c => `
     <article class="card">
       <h3>${esc(c.nombre)}</h3>
-      ${c.significado ? `<p>${esc(c.significado)}</p>` : ""}
+      ${c.significado ? `<div class="fmt">${renderizarHTML(c.significado)}</div>` : ""}
     </article>`).join("");
 
   const citas = sub.citas.map(c => `
     <blockquote class="${c.favorita ? "fav" : ""}">
       <p>“${esc(c.texto)}”</p>
-      <footer>${c.pagina ? `pág. ${esc(c.pagina)}` : ""}${c.pagina && c.etiqueta ? " · " : ""}${esc(c.etiqueta || "")}${c.nota ? ` — ${esc(c.nota)}` : ""}${c.favorita ? " ★" : ""}</footer>
+      <footer>${c.pagina ? `pág. ${esc(c.pagina)}` : ""}${c.pagina && c.etiqueta ? " · " : ""}${esc(c.etiqueta || "")}${c.favorita ? " ★" : ""}</footer>
+      ${c.nota ? `<div class="fmt nota-cita">${renderizarHTML(c.nota)}</div>` : ""}
     </blockquote>`).join("");
 
   const seccion = (titulo, contenido, clase = "grid") =>
@@ -133,7 +135,12 @@ blockquote{margin:0 0 .8rem;padding:.9rem 1.1rem;background:var(--card);border:1
 blockquote.fav{border-left-color:var(--oro)}
 blockquote p{margin:0 0 .4rem;font-size:1rem}
 blockquote footer{font-size:.78rem;color:var(--muted)}
-.notas{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;white-space:pre-wrap;font-size:.92rem}
+.notas{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;font-size:.92rem}
+.notas h3{margin:.8rem 0 .3rem;font-size:.95rem}.notas h3:first-child{margin-top:0}
+.fmt p{margin:.4rem 0}.fmt ul,.fmt ol{margin:.4rem 0;padding-left:1.3rem;font-size:.9rem}.fmt li{margin:.15rem 0}
+.fmt mark{background:rgba(232,179,57,.38);color:inherit;padding:0 .15em;border-radius:3px}
+.fmt a{color:var(--accent)}
+.nota-cita{margin-top:.5rem;font-size:.85rem;color:var(--muted)}
 footer.pie{text-align:center;color:var(--muted);font-size:.75rem;padding:1rem}
 </style>
 </head>
@@ -148,7 +155,7 @@ footer.pie{text-align:center;color:var(--muted);font-size:.75rem;padding:1rem}
   ${seccion("Personajes", personajes)}
   ${seccion("Conceptos", conceptos)}
   ${seccion("Citas", citas, "")}
-  ${libro.notas || libro.observaciones ? `<section><h2>Notas</h2><div class="notas">${esc([libro.notas, libro.observaciones].filter(Boolean).join("\\n\\n"))}</div></section>` : ""}
+  ${libro.notas || libro.observaciones ? `<section><h2>Notas</h2><div class="notas">${libro.notas ? `<h3>Notas</h3><div class="fmt">${renderizarHTML(libro.notas)}</div>` : ""}${libro.observaciones ? `<h3>Observaciones</h3><div class="fmt">${renderizarHTML(libro.observaciones)}</div>` : ""}</div></section>` : ""}
 </main>
 <footer class="pie">Generado el ${fechaHoy()} desde Bitácora de lectura</footer>
 </body>

@@ -2,7 +2,7 @@
 
 Esta guía te lleva de cero a tener tu propia copia de la app funcionando con Firebase y publicada como sitio estático en **Netlify**. La app no tiene un proceso de build; para la configuración actual no se requieren Cloud Functions.
 
-**Qué vas a crear:** un proyecto de Firebase con *Authentication* (correo/contraseña y Google) y *Cloud Firestore* (base de datos). Este checkout no incluye las reglas `firestore.rules` a las que apunta `firebase.json`; revisa el paso 5 antes de publicar reglas.
+**Qué vas a crear:** un proyecto de Firebase con *Authentication* (correo/contraseña y Google) y *Cloud Firestore* (base de datos). Las reglas de seguridad están versionadas en `firestore.rules` (el paso 5 explica cómo publicarlas).
 
 Índice: [1 Proyecto](#1-crear-el-proyecto) · [2 App web](#2-registrar-la-app-web-y-copiar-la-configuración) · [3 Authentication](#3-activar-authentication) · [4 Firestore](#4-crear-firestore) · [5 Reglas](#5-publicar-las-reglas-de-seguridad) · [6 Primer admin](#6-crear-el-primer-administrador) · [7 Probar](#7-probar-en-local) · [8 Netlify](#8-publicar-en-netlify) · [9 Seguridad](#9-recomendaciones-de-seguridad-y-límites) · [10 Problemas](#10-problemas-frecuentes) · [Anexo: modelo de datos](#anexo-modelo-de-datos)
 
@@ -58,9 +58,9 @@ No hace falta crear colecciones a mano salvo el primer administrador (paso 6). L
 
 ## 5. Publicar las reglas de seguridad
 
-**Importante:** `firebase.json` referencia un archivo `firestore.rules`, pero ese archivo no está presente en este checkout. No se puede publicar esa ruta con Firebase CLI hasta recuperar o crear y revisar el archivo. También puedes gestionar las reglas desde Firebase Console; en ambos casos debes definir reglas seguras para el modelo de datos antes de usar datos reales.
+El archivo [`firestore.rules`](../firestore.rules) de la raíz es la **fuente versionada** de las reglas (es copia literal de las publicadas en la consola el 2026-10-13; la lógica no se ha modificado). `firebase.json` ya apunta a él. No uses reglas abiertas como `allow read, write: if true`.
 
-Como mínimo, las reglas deben garantizar:
+Las reglas garantizan:
 
 | Colección | Quién puede qué |
 |---|---|
@@ -71,12 +71,24 @@ Como mínimo, las reglas deben garantizar:
 
 **Para publicarlas:**
 
-- *Desde la consola:* **Firestore Database → Rules**, revisa o define reglas acordes con el modelo de datos y permisos anteriores, y pulsa **Publicar**. No uses reglas abiertas como `allow read, write: if true`.
-- *Con Firebase CLI:* primero recupera o crea `firestore.rules`, revísalo y luego ejecuta `firebase login`, `firebase use --add` y `firebase deploy --only firestore:rules`. `firebase.json` ya señala esa ruta.
+- *Desde la consola:* **Firestore Database → Rules**, pega el contenido de `firestore.rules` y pulsa **Publicar**.
+- *Con Firebase CLI:* `firebase login`, `firebase use --add` y `firebase deploy --only firestore:rules`.
+
+Después de cambiar reglas, ejecuta la tabla de «Rules Playground» y la lista manual de [PRUEBAS.md](PRUEBAS.md).
+
+**Cómo encajan las reglas con la app (sin cambios en las reglas):**
+
+- **Papelera:** mover un libro a la papelera es un `update` normal del libro (campo `eliminadoEn`), que el dueño activo ya puede hacer.
+- **Eliminar definitivamente:** las subcolecciones se comprueban leyendo el libro padre (`get()`), así que la app borra **primero** capítulos, personajes, citas y conceptos (en lotes de 400) y **al final** el libro. Si se interrumpe, el libro sigue en la papelera y se puede repetir.
+- **Restaurar respaldo:** usa lotes de hasta 400 operaciones; cada operación evalúa dos `get()` (perfil y libro), dentro de los límites de Firestore.
+
+**Observaciones sobre las reglas actuales (no modificadas a propósito, por si decides endurecerlas más adelante):**
+
+- La regla de subcolecciones usa un comodín (`/{subcoleccion}/{docId}`): el dueño activo podría crear subcolecciones con otros nombres. Limitarlo a `capitulos|personajes|citas|conceptos` sería más estricto.
+- Las reglas **no validan campos** (el dueño puede escribir cualquier campo en sus libros) ni impiden que un admin se cambie su propio rol/estado o deje la app sin administradores. Esas protecciones existen solo en la interfaz de `admin.html`; no son una barrera de seguridad frente a quien llame a Firestore directamente.
 
 > ⚠️ Los valores distinguen mayúsculas: **`Admin`**, **`Lector`**, **`Activo`**, **`Pendiente`** e **`Inactivo`**. Usa estos valores al configurar perfiles y reglas.
 
-> ℹ️ Al definir reglas, verifica que sean compatibles con las operaciones por lotes de **Cargar respaldo**. No se puede confirmar el contenido ni el comportamiento de reglas que no están incluidas en este checkout.
 
 ## 6. Crear el primer administrador
 
@@ -137,7 +149,8 @@ El repositorio contiene páginas estáticas y módulos ES, sin comando de build.
 - **Aprobación manual**: nadie usa la app hasta que un admin lo pone en `Activo`; mantén al menos un admin de respaldo.
 - **Cuotas del plan Spark**: Firestore y Authentication tienen límites diarios/mensuales gratuitos. Para uso personal o de un grupo pequeño sobran, pero consulta los límites vigentes en la documentación de Firebase. Cada lectura de reglas con `get()` cuenta como lectura; la app está pensada para uso moderado.
 - **Respaldos**: descarga respaldos periódicos (`Descargar respaldo`); es la única copia fuera de Firestore.
-- Al borrar un libro, Firestore **no borra automáticamente sus subcolecciones**; la restauración de respaldos sí las limpia. (La app actual no incluye un botón de borrar libro.)
+- **Eliminar libros:** se hace en dos pasos (papelera → eliminar definitivamente) y la app borra también las subcolecciones, que Firestore no borra solo. Ver [RESPALDOS.md](RESPALDOS.md).
+- **Eliminar cuentas de usuario** (acceso en Authentication + datos) no se puede hacer desde el navegador con el plan gratuito: requiere una Cloud Function con el Admin SDK. Mientras tanto se usa el estado `Inactivo`; si hace falta borrar del todo, se hace a mano en la consola de Firebase.
 
 ## 10. Problemas frecuentes
 
@@ -153,7 +166,8 @@ El repositorio contiene páginas estáticas y módulos ES, sin comando de build.
 | `auth/popup-blocked` | El navegador bloqueó la ventana de Google; permite *pop-ups* para el sitio. |
 | Estadísticas de páginas en 0 | Los capítulos necesitan rango de páginas (inicio y fin) para sumar. |
 | El sitio publicado no refleja los cambios | Service worker/caché: recarga forzada (Ctrl+F5) o borra los datos del sitio. |
-| "Cargar respaldo" falla con permisos | Revisa las reglas actualmente publicadas y que permitan, con autorización adecuada, las escrituras por lotes de la restauración. Este checkout no incluye un archivo de reglas que puedas comparar directamente. |
+| "Cargar respaldo" falla con permisos | Compara las reglas publicadas con `firestore.rules`; deben coincidir. |
+| "No se pudo completar … Reintentar" al eliminar definitivamente | Se interrumpió a medias (red/permisos). El libro sigue en la papelera: pulsa «Reintentar» o vuelve a intentarlo. |
 
 ---
 
@@ -182,7 +196,8 @@ El repositorio contiene páginas estáticas y módulos ES, sin comando de build.
 | `totalPaginas`, `paginaActual` | number | |
 | `fechaInicio`, `fechaFin` | string `AAAA-MM-DD` | |
 | `calificacion` | number 1–5 | |
-| `notas`, `observaciones` | string | |
+| `notas`, `observaciones` | string | Texto con marcas de formato (ver abajo) |
+| `eliminadoEn` | timestamp (opcional) | Si existe, el libro está en la papelera. No altera `actualizadoEn` |
 | `creadoEn`, `actualizadoEn` | timestamp | Base de las estadísticas |
 
 ### Subcolecciones de `libros/{libroId}`
@@ -193,6 +208,10 @@ El repositorio contiene páginas estáticas y módulos ES, sin comando de build.
 | `personajes` | `nombre`, `rol`, `relevancia` (`principal` \| `secundario` \| `menor` \| `mencionado`), `alias` (array), `descripcion`, `conexiones` (array), `creadoEn` |
 | `citas` | `texto`, `pagina` (number\|null), `etiqueta`, `nota`, `favorita` (boolean), `creadoEn` |
 | `conceptos` | `nombre`, `significado`, `creadoEn` |
+
+### Texto con formato
+
+`notas`, `observaciones`, `capitulos.resumen`, `personajes.descripcion`, `citas.nota` y `conceptos.significado` se guardan como **texto normal con marcas** (subconjunto de Markdown): `**negrita**`, `*cursiva*`, `++subrayado++`, `~~tachado~~`, `==resaltado==`, listas con `- ` o `1. ` y enlaces `[texto](https://…)`. No se guarda HTML; el texto se escapa al mostrarlo y solo se generan etiquetas permitidas (`js/formato.js`). Los textos antiguos siguen siendo válidos sin migración.
 
 ### Formato del archivo de respaldo (`.json`)
 
@@ -216,4 +235,4 @@ El repositorio contiene páginas estáticas y módulos ES, sin comando de build.
 }
 ```
 
-Los timestamps se guardan como texto ISO y se convierten de nuevo a `Timestamp` al restaurar.
+Los timestamps (`creadoEn`, `actualizadoEn` y, si existe, `eliminadoEn`) se guardan como texto ISO y se convierten de nuevo a `Timestamp` al restaurar. Más detalles en [RESPALDOS.md](RESPALDOS.md).

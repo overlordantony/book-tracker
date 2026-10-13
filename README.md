@@ -9,23 +9,24 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 ## Funcionalidades actuales
 
 - **Acceso y perfiles**: inicio de sesión con correo y contraseña o Google, recuperación de contraseña, autoregistro sujeto a aprobación y control de acceso por rol y estado.
-- **Biblioteca**: alta de libros con título, autor, portada, enlace externo, géneros, etiquetas, formato, estado, progreso, fechas, calificación, notas y observaciones. Permite buscar por título, autor, género o etiqueta; filtrar por estado y etiqueta; y ordenar por fecha, título, autor, progreso o calificación.
-- **Detalle del libro**: edición de los datos del libro y gestión CRUD de capítulos, personajes, citas y conceptos. Los elementos de estas secciones se pueden crear, editar y eliminar. Las citas se pueden marcar como favoritas y copiar.
+- **Biblioteca**: alta de libros con título, autor, portada, enlace externo, géneros, etiquetas, formato, estado, progreso, fechas, calificación, notas y observaciones. Permite buscar por título, autor, género o etiqueta; combinar filtros de estado, género, etiqueta, formato, calificación y progreso (con chips para quitarlos); ordenar por fecha, título, autor, progreso o calificación; alternar entre vista de lista y de cuadrícula (se recuerda la preferencia) y cargar los libros por páginas de 24.
+- **Detalle del libro**: resumen visual (estado, progreso, calificación, formato, fechas), notas y actividad reciente; edición de los datos del libro y gestión CRUD de capítulos, personajes, citas y conceptos. Las citas se pueden marcar como favoritas y copiar.
+- **Papelera**: «Mover a la papelera» desde el detalle (reversible), restauración y eliminación definitiva con confirmación que explica qué se borra; la eliminación definitiva borra también capítulos, personajes, citas y conceptos.
+- **Texto con formato**: notas, resúmenes, descripciones y notas de cita admiten negrita, cursiva, subrayado, tachado, resaltado, listas y enlaces, con barra de herramientas, atajos de teclado y vista previa. Se guarda como texto con marcas (no HTML) y se sanitiza al mostrarlo.
 - **Citas globales**: búsqueda de citas entre los libros propios, con filtro por etiqueta y favoritas.
-- **Estadísticas**: libros agregados por mes/año, páginas registradas mediante rangos de capítulos por semana/mes, seguimiento semanal del progreso, resumen por estado y lecturas en curso. Las semanas comienzan el lunes.
+- **Estadísticas**: libros agregados por mes/año, páginas registradas mediante rangos de capítulos por semana/mes, seguimiento semanal del progreso, resumen por estado y lecturas en curso. Las semanas comienzan el lunes. Cada gráfica tiene descripción accesible, leyenda, rango de fechas, mensajes útiles cuando no hay datos y una tabla alternativa. Los libros de la papelera no se cuentan.
 - **Respaldos**: descarga de la biblioteca propia como JSON e importación/restauración del respaldo con confirmación. Un administrador puede descargar un respaldo de todas las bibliotecas.
 - **Guía exportable**: genera un documento HTML autónomo con los datos y apartados de un libro.
-- **Administración**: el administrador puede crear usuarios, modificar su nombre, rol y estado, y consultar sus bibliotecas en modo de solo lectura.
+- **Administración**: el administrador puede crear usuarios, modificar su nombre, rol y estado, y consultar sus bibliotecas en modo de solo lectura. La interfaz explica cada estado, pide confirmación al desactivar y evita que alguien se bloquee a sí mismo o que quede la app sin administradores activos.
 - **Presentación**: tema oscuro/claro, diseño adaptable a móvil y escritorio, y PWA instalable con service worker.
 
 ## Límites conocidos
 
-- La biblioteca permite **crear y editar libros**, pero todavía no ofrece una acción en pantalla para eliminarlos. Aunque existe una función de base de datos para borrar el documento de un libro, usarla por sí sola no borra las subcolecciones de Firestore; la eliminación completa debe implementarse con cuidado.
-- La administración permite crear y editar perfiles, pero no eliminar usuarios. Borrar también la cuenta de Firebase Authentication y sus datos requiere una operación privilegiada segura; no se debe resolver desde el navegador con credenciales administrativas.
+- **Eliminar cuentas de usuario** no es posible desde la app: borrar la cuenta de Firebase Authentication y sus datos requiere una operación privilegiada (Cloud Function con Admin SDK), que no se debe resolver desde el navegador. El administrador puede dejar la cuenta en estado `Inactivo`. Tampoco hay todavía una opción para que cada usuario solicite eliminar su cuenta.
+- Las protecciones de administración (no cambiar el propio rol, conservar un administrador activo) están en la interfaz; las reglas de Firestore no las imponen. Ver las observaciones en [docs/FIREBASE.md](docs/FIREBASE.md#5-publicar-las-reglas-de-seguridad).
 - El campo de URL del libro es un enlace externo (por ejemplo, a una tienda); **no** es todavía un enlace de documento que se abra en un lector.
-- No hay lector de EPUB/PDF, carga local de documentos, anotaciones de texto enriquecido ni sincronización de posición de lectura entre dispositivos.
-- La edición de notas y descripciones usa campos de texto sencillos: no hay herramientas de negrita, cursiva, resaltado, tachado u otros estilos.
-- Este checkout no contiene `firestore.rules`, aunque `firebase.json` lo referencia. Antes de desplegar reglas con Firebase CLI o habilitar usuarios reales, hay que recuperar o definir y publicar reglas de Firestore adecuadas. No habilites reglas abiertas.
+- No hay lector de EPUB/PDF, carga local de documentos, anotaciones asociadas a una posición de lectura ni sincronización de posición entre dispositivos (Fases 4 a 6 de la hoja de ruta).
+- El formato de texto es un subconjunto fijo (sin encabezados, imágenes ni tablas). Un texto antiguo que contuviera marcas como `**así**` pasará a verse con ese formato.
 
 ## Tecnología
 
@@ -49,15 +50,22 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 ├── manifest.json          # Metadatos de la PWA
 ├── sw.js                  # Service worker (red primero, caché de respaldo)
 ├── firebase.json          # Configuración para Firebase CLI; apunta a firestore.rules
+├── firestore.rules        # Reglas de seguridad de Firestore (fuente versionada)
+├── RoadMap.md             # Hoja de ruta y estado de avance
+├── tests/formato.test.mjs # Prueba automática del formato de texto (node, sin dependencias)
 ├── css/styles.css         # Estilos, temas y diseño adaptable
 ├── icons/                 # Iconos de la app y de la PWA
 ├── docs/FIREBASE.md       # Configuración de Firebase y publicación
+├── docs/PRUEBAS.md        # Pruebas de regresión y comprobación de reglas
+├── docs/RESPALDOS.md      # Estrategia de respaldo y recuperación
 └── js/
     ├── firebase-config.js # Configuración web del proyecto Firebase
     ├── firebase-init.js   # Inicialización de Firebase
     ├── auth.js            # Autenticación
     ├── roles.js           # Perfiles, roles y estados
-    ├── db.js              # Acceso a libros y subcolecciones de Firestore
+    ├── db.js              # Acceso a libros, subcolecciones y papelera de Firestore
+    ├── formato.js         # Texto con formato: render seguro y editor con barra de herramientas
+    ├── modal.js           # Cuadro de confirmación accesible reutilizable
     ├── app.js             # Biblioteca y flujo de app.html
     ├── detalle.js         # Flujo de detalle.html
     ├── estadisticas.js    # Cálculo y presentación de estadísticas
@@ -76,7 +84,7 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 2. Configura Firebase siguiendo [docs/FIREBASE.md](docs/FIREBASE.md): Authentication, Firestore, perfiles y dominios autorizados.
 3. Configura la aplicación web de Firebase en `js/firebase-config.js`. El archivo contiene la configuración cliente de Firebase; no hay una plantilla `firebase-config.example.js` en este checkout. La configuración web es visible desde el navegador: la protección depende de reglas de Firestore correctamente configuradas y de las restricciones de API correspondientes.
 4. Sirve la carpeta por HTTP con un servidor local (por ejemplo, **Live Server** en VS Code). No abras las páginas con `file://`, porque los módulos ES no funcionarán correctamente.
-5. Comprueba el inicio de sesión, la lectura/escritura de datos y los respaldos antes de compartir la aplicación.
+5. Comprueba el inicio de sesión, la lectura/escritura de datos y los respaldos antes de compartir la aplicación. La lista completa está en [docs/PRUEBAS.md](docs/PRUEBAS.md); la prueba automática del formato se ejecuta con `node tests/formato.test.mjs`.
 
 ## Publicación en Netlify
 
@@ -87,7 +95,7 @@ Después de publicar:
 1. Añade el dominio asignado por Netlify (y el dominio personalizado, si existe) en **Firebase Authentication → Settings → Authorized domains**.
 2. Si restringes la clave web de Firebase por referentes HTTP, permite el dominio de producción de Netlify y `localhost` para desarrollo.
 3. Verifica en Netlify que la versión publicada incluya la configuración cliente correcta en `js/firebase-config.js`. No uses variables de entorno de Netlify esperando que cambien por sí solas un archivo estático: haría falta un paso de build que las inyecte.
-4. Comprueba que las reglas de Firestore estén publicadas y que no permitan acceso general a los datos.
+4. Comprueba que las reglas publicadas coincidan con `firestore.rules` y que no permitan acceso general a los datos.
 
 ## Roles y estados
 
@@ -101,6 +109,7 @@ El autorregistro y el primer acceso con Google crean perfiles `Pendiente`. Un ad
 ## Respaldos
 
 - **Descargar respaldo** crea un archivo `respaldo-bitacora-AAAA-MM-DD.json` con los libros propios y sus capítulos, personajes, citas y conceptos.
+- Los libros de la papelera se incluyen en el respaldo y vuelven a la papelera al restaurar. Ver [docs/RESPALDOS.md](docs/RESPALDOS.md).
 - **Cargar respaldo** valida el JSON, muestra un resumen y solicita confirmación antes de restaurar. La restauración escribe los elementos del archivo y elimina los elementos propios que no estén incluidos; permite descargar primero una copia de los datos actuales.
 - Un respaldo administrativo puede contener libros de varios usuarios. Al cargarlo en una cuenta, se restauran solamente los libros que pertenecían a esa cuenta.
 

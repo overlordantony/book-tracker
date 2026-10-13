@@ -1,10 +1,19 @@
 import { vigilarSesion, logout } from "./auth.js";
-import { crearLibro, obtenerLibros, obtenerCitasDeLibros } from "./db.js";
+import {
+  crearLibro,
+  obtenerLibros,
+  obtenerCitasDeLibros,
+  restaurarDePapelera,
+  eliminarLibroDefinitivo,
+  contarContenido
+} from "./db.js";
 import { iniciarToggleTema } from "./theme.js";
 import { obtenerPerfil } from "./roles.js";
 import { renderEstadisticas } from "./estadisticas.js";
 import { exportarBiblioteca } from "./exportar.js";
 import { prepararRespaldo, restaurarRespaldo } from "./importar.js";
+import { confirmarAccion, negrita } from "./modal.js";
+import { renderizarHTML, aTextoPlano, montarEditor } from "./formato.js";
 
 iniciarToggleTema();
 
@@ -13,8 +22,14 @@ iniciarToggleTema();
 const uidObjetivo = new URLSearchParams(window.location.search).get("uid");
 const sufijoUid = uidObjetivo ? `&uid=${encodeURIComponent(uidObjetivo)}` : "";
 
-let todosLosLibros = [];
+let todosLosLibros = [];   // libros activos (sin los de la papelera)
+let librosPapelera = [];   // libros movidos a la papelera
 let citasCache = null;
+
+// Preferencias de visualización (solo comodidad; si el navegador bloquea el
+// almacenamiento, la app funciona igual con los valores por defecto).
+function leerPref(clave) { try { return localStorage.getItem(clave); } catch { return null; } }
+function guardarPref(clave, valor) { try { localStorage.setItem(clave, valor); } catch { /* sin almacenamiento */ } }
 
 // ---------- Utilidades ----------
 function escapeHtml(str) {
@@ -62,6 +77,7 @@ vigilarSesion(async (usuario) => {
   if (uidObjetivo && uidObjetivo !== usuario.uid) {
     document.getElementById("pestañaAgregar").style.display = "none";
     document.getElementById("btnCargarRespaldo").hidden = true; // restaurar solo sobre la propia biblioteca
+    document.getElementById("pestañaPapelera").style.display = "none"; // la papelera es solo del dueño
     const aviso = document.getElementById("avisoVistaAjena");
     aviso.hidden = false;
     aviso.textContent = "Estás viendo la biblioteca de otro usuario, en modo solo lectura.";
@@ -76,6 +92,7 @@ const vistas = {
   biblioteca: document.getElementById("vistaBiblioteca"),
   estadisticas: document.getElementById("vistaEstadisticas"),
   citas: document.getElementById("vistaCitas"),
+  papelera: document.getElementById("vistaPapelera"),
   agregar: document.getElementById("vistaAgregar")
 };
 
@@ -91,10 +108,14 @@ pestañas.forEach(btn => {
       renderEstadisticas(todosLosLibros, document.getElementById("contenedorEstadisticas"));
     }
     if (vista === "citas") cargarCitas();
+    if (vista === "papelera") renderPapelera();
   });
 });
 
 // ---------- Formulario: agregar libro ----------
+montarEditor(document.getElementById("notas"));
+montarEditor(document.getElementById("observaciones"));
+
 const form = document.getElementById("formLibro");
 const formError = document.getElementById("formError");
 
@@ -132,40 +153,77 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// ---------- Biblioteca: carga, filtros y orden ----------
+// ---------- Biblioteca: carga, filtros, orden y vistas ----------
 const listaLibros = document.getElementById("listaLibros");
 const bibliotecaVacia = document.getElementById("bibliotecaVacia");
 const buscador = document.getElementById("buscador");
-const filtroEstado = document.getElementById("filtroEstado");
-const filtroEtiqueta = document.getElementById("filtroEtiqueta");
 const selectOrden = document.getElementById("orden");
 const contador = document.getElementById("contadorLibros");
+const btnMasLibros = document.getElementById("btnMasLibros");
+const panelFiltros = document.getElementById("panelFiltros");
+const contadorFiltros = document.getElementById("contadorFiltros");
+const filtrosActivos = document.getElementById("filtrosActivos");
+const btnVistaLista = document.getElementById("btnVistaLista");
+const btnVistaCuadricula = document.getElementById("btnVistaCuadricula");
+
+const FILTROS = {
+  estado: document.getElementById("filtroEstado"),
+  genero: document.getElementById("filtroGenero"),
+  etiqueta: document.getElementById("filtroEtiqueta"),
+  formato: document.getElementById("filtroFormato"),
+  calificacion: document.getElementById("filtroCalificacion"),
+  progreso: document.getElementById("filtroProgreso")
+};
+const NOMBRE_FILTRO = {
+  estado: "Estado", genero: "Género", etiqueta: "Etiqueta",
+  formato: "Formato", calificacion: "Calificación", progreso: "Progreso"
+};
 
 const ESTADO_LABEL = {
   pendiente: "Pendiente", leyendo: "Leyendo", pausado: "Pausado",
   terminado: "Terminado", descartado: "Descartado"
 };
+const POR_PAGINA = 24;
+let visibles = POR_PAGINA;
+let modoVista = leerPref("bitacora.vista") === "cuadricula" ? "cuadricula" : "lista";
+if (["reciente", "titulo", "autor", "progreso", "calificacion"].includes(leerPref("bitacora.orden"))) {
+  selectOrden.value = leerPref("bitacora.orden");
+}
+panelFiltros.open = window.innerWidth > 640;
+
+function etiquetaEstado(estado) {
+  return ESTADO_LABEL[String(estado || "").toLowerCase()] || estado || "—";
+}
 
 async function cargarLibros() {
   try {
-    todosLosLibros = await obtenerLibros(uidObjetivo || undefined);
+    const todos = await obtenerLibros(uidObjetivo || undefined);
+    todosLosLibros = todos.filter(l => !l.eliminadoEn);
+    librosPapelera = todos.filter(l => l.eliminadoEn)
+      .sort((a, b) => (b.eliminadoEn?.toMillis?.() || 0) - (a.eliminadoEn?.toMillis?.() || 0));
     citasCache = null;
-    poblarFiltroEtiquetas();
+    poblarFiltros();
+    actualizarContadorPapelera();
     renderBiblioteca();
+    if (!vistas.papelera.hidden) renderPapelera();
   } catch (err) {
     bibliotecaVacia.hidden = false;
     bibliotecaVacia.textContent = "No se pudo cargar la biblioteca: " + err.message;
   }
 }
 
-function poblarFiltroEtiquetas() {
-  const actual = filtroEtiqueta.value;
-  const unicas = new Set();
-  todosLosLibros.forEach(l => [...(l.generos || []), ...(l.etiquetas || [])].forEach(x => unicas.add(x)));
-  const ordenadas = [...unicas].sort((a, b) => a.localeCompare(b, "es"));
-  filtroEtiqueta.innerHTML = `<option value="">Géneros y etiquetas</option>` +
-    ordenadas.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
-  if (ordenadas.includes(actual)) filtroEtiqueta.value = actual;
+function llenarSelect(select, primeraOpcion, valores) {
+  const actual = select.value;
+  select.innerHTML = `<option value="">${primeraOpcion}</option>` +
+    valores.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+  if (valores.includes(actual)) select.value = actual;
+}
+
+function poblarFiltros() {
+  const unicos = (campo) => [...new Set(todosLosLibros.flatMap(l => l[campo] || []))]
+    .sort((a, b) => a.localeCompare(b, "es"));
+  llenarSelect(FILTROS.genero, "Todos", unicos("generos"));
+  llenarSelect(FILTROS.etiqueta, "Todas", unicos("etiquetas"));
 }
 
 function aplicarOrden(lista) {
@@ -180,30 +238,111 @@ function aplicarOrden(lista) {
   return copia;
 }
 
+function coincideProgreso(libro, filtro) {
+  const pct = porcentaje(libro);
+  if (filtro === "sin-total") return pct === null;
+  if (pct === null) return false;
+  if (filtro === "no-iniciado") return pct === 0;
+  if (filtro === "en-curso") return pct > 0 && pct < 100;
+  if (filtro === "completo") return pct >= 100;
+  return true;
+}
+
+function coincideCalificacion(libro, filtro) {
+  const c = libro.calificacion || 0;
+  if (filtro === "sin") return !c;
+  if (filtro === "5") return c === 5;
+  if (filtro === "4+") return c >= 4;
+  if (filtro === "3+") return c >= 3;
+  return true;
+}
+
+// Todos los filtros son combinables (se cumplen a la vez).
+function pasaFiltros(l, texto) {
+  const f = Object.fromEntries(Object.entries(FILTROS).map(([k, el]) => [k, el.value]));
+  if (f.estado && l.estado !== f.estado) return false;
+  if (f.genero && !(l.generos || []).includes(f.genero)) return false;
+  if (f.etiqueta && !(l.etiquetas || []).includes(f.etiqueta)) return false;
+  if (f.formato && l.formato !== f.formato) return false;
+  if (f.calificacion && !coincideCalificacion(l, f.calificacion)) return false;
+  if (f.progreso && !coincideProgreso(l, f.progreso)) return false;
+  if (texto) {
+    const pajar = norm([l.titulo, l.autor, ...(l.generos || []), ...(l.etiquetas || [])].join(" "));
+    if (!pajar.includes(texto)) return false;
+  }
+  return true;
+}
+
+function filtrosEnUso() {
+  const lista = Object.entries(FILTROS)
+    .filter(([, el]) => el.value)
+    .map(([clave, el]) => ({
+      etiqueta: `${NOMBRE_FILTRO[clave]}: ${el.options[el.selectedIndex].textContent}`,
+      quitar: () => { el.value = ""; }
+    }));
+  if (buscador.value.trim()) {
+    lista.unshift({ etiqueta: `Búsqueda: “${buscador.value.trim()}”`, quitar: () => { buscador.value = ""; } });
+  }
+  return lista;
+}
+
+function pintarFiltrosActivos() {
+  const activos = filtrosEnUso();
+  const nFiltros = activos.filter(a => !a.etiqueta.startsWith("Búsqueda")).length;
+  contadorFiltros.hidden = !nFiltros;
+  contadorFiltros.textContent = nFiltros;
+  filtrosActivos.hidden = !activos.length;
+  filtrosActivos.innerHTML = "";
+  if (!activos.length) return;
+  activos.forEach(a => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip-filtro";
+    b.textContent = a.etiqueta + " ×";
+    b.setAttribute("aria-label", `Quitar filtro ${a.etiqueta}`);
+    b.addEventListener("click", () => { a.quitar(); cambioFiltros(); });
+    filtrosActivos.appendChild(b);
+  });
+  const limpiar = document.createElement("button");
+  limpiar.type = "button";
+  limpiar.className = "enlace-boton";
+  limpiar.textContent = "Limpiar filtros";
+  limpiar.addEventListener("click", () => { activos.forEach(a => a.quitar()); cambioFiltros(); });
+  filtrosActivos.appendChild(limpiar);
+}
+
+// Cualquier cambio de búsqueda, filtro u orden vuelve a la primera página.
+function cambioFiltros() {
+  visibles = POR_PAGINA;
+  renderBiblioteca();
+}
+
 function renderBiblioteca() {
   const texto = norm(buscador.value);
-  const estado = filtroEstado.value;
-  const etiqueta = filtroEtiqueta.value;
+  const lista = aplicarOrden(todosLosLibros.filter(l => pasaFiltros(l, texto)));
+  pintarFiltrosActivos();
 
-  const filtrados = todosLosLibros.filter(l => {
-    if (estado && l.estado !== estado) return false;
-    if (etiqueta && ![...(l.generos || []), ...(l.etiquetas || [])].includes(etiqueta)) return false;
-    if (texto) {
-      const pajar = norm([l.titulo, l.autor, ...(l.generos || []), ...(l.etiquetas || [])].join(" "));
-      if (!pajar.includes(texto)) return false;
-    }
-    return true;
-  });
-
-  const lista = aplicarOrden(filtrados);
   listaLibros.innerHTML = "";
-  contador.textContent = `${lista.length} de ${todosLosLibros.length}`;
+  listaLibros.className = "lista-libros" + (modoVista === "cuadricula" ? " vista-cuadricula" : "");
+  btnVistaLista.classList.toggle("activo", modoVista === "lista");
+  btnVistaLista.setAttribute("aria-pressed", String(modoVista === "lista"));
+  btnVistaCuadricula.classList.toggle("activo", modoVista === "cuadricula");
+  btnVistaCuadricula.setAttribute("aria-pressed", String(modoVista === "cuadricula"));
+
+  const mostrados = Math.min(visibles, lista.length);
+  contador.textContent = lista.length === todosLosLibros.length
+    ? `${mostrados} de ${todosLosLibros.length}`
+    : `${mostrados} de ${lista.length} coincidencias · ${todosLosLibros.length} en total`;
+  btnMasLibros.hidden = lista.length <= visibles;
+  btnMasLibros.textContent = `Mostrar más (${Math.max(lista.length - visibles, 0)} restantes)`;
 
   if (!todosLosLibros.length) {
     bibliotecaVacia.hidden = false;
     bibliotecaVacia.textContent = uidObjetivo
       ? "Esta persona todavía no ha agregado libros."
-      : 'Todavía no has agregado ningún libro. Ve a "Agregar libro" para empezar tu bitácora.';
+      : librosPapelera.length
+        ? 'No tienes libros activos. Los que eliminaste están en la pestaña "Papelera".'
+        : 'Todavía no has agregado ningún libro. Ve a "Agregar libro" para empezar tu bitácora.';
     return;
   }
   if (!lista.length) {
@@ -212,47 +351,148 @@ function renderBiblioteca() {
     return;
   }
   bibliotecaVacia.hidden = true;
-  lista.forEach(libro => listaLibros.appendChild(filaLibro(libro)));
+  lista.slice(0, visibles).forEach(libro => listaLibros.appendChild(tarjetaLibro(libro)));
 }
 
-[buscador].forEach(el => el.addEventListener("input", renderBiblioteca));
-[filtroEstado, filtroEtiqueta, selectOrden].forEach(el => el.addEventListener("change", renderBiblioteca));
+buscador.addEventListener("input", cambioFiltros);
+Object.values(FILTROS).forEach(el => el.addEventListener("change", cambioFiltros));
+selectOrden.addEventListener("change", () => { guardarPref("bitacora.orden", selectOrden.value); cambioFiltros(); });
 
-function filaLibro(libro) {
+btnMasLibros.addEventListener("click", () => {
+  const antes = Math.min(visibles, listaLibros.children.length);
+  visibles += POR_PAGINA;
+  renderBiblioteca();
+  listaLibros.children[antes]?.focus(); // el foco pasa al primer libro nuevo (teclado / lector de pantalla)
+});
+
+function cambiarVista(modo) {
+  modoVista = modo;
+  guardarPref("bitacora.vista", modo);
+  renderBiblioteca();
+}
+btnVistaLista.addEventListener("click", () => cambiarVista("lista"));
+btnVistaCuadricula.addEventListener("click", () => cambiarVista("cuadricula"));
+
+function portadaHtml(libro, inicial) {
+  return libro.portadaUrl
+    ? `<img src="${escapeHtml(libro.portadaUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+    : `<span>${inicial}</span>`;
+}
+
+function enlazarFallbackPortada(contenedor, inicial) {
+  // Si la portada no carga (URL rota o bloqueada), vuelve a la inicial.
+  const img = contenedor.querySelector(".portada-mini img");
+  if (img) img.addEventListener("error", () => { img.parentElement.innerHTML = `<span>${inicial}</span>`; });
+}
+
+// Tarjeta de libro: es un enlace real (accesible con teclado) y sirve para
+// las dos vistas; el CSS decide si se ve como fila o como tarjeta.
+function tarjetaLibro(libro) {
   const pct = porcentaje(libro);
   const inicial = escapeHtml((libro.titulo || "?").trim().charAt(0).toUpperCase());
-
-  const div = document.createElement("div");
-  div.className = `fila-libro estado-${libro.estado}`;
-  div.addEventListener("click", () => {
-    window.location.href = `detalle.html?id=${libro.id}${sufijoUid}`;
-  });
-  div.innerHTML = `
-    <div class="portada-mini">
-      ${libro.portadaUrl
-        ? `<img src="${escapeHtml(libro.portadaUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
-        : `<span>${inicial}</span>`}
-    </div>
+  const a = document.createElement("a");
+  a.className = `fila-libro tarjeta-libro estado-${String(libro.estado || "").toLowerCase()}`;
+  a.href = `detalle.html?id=${encodeURIComponent(libro.id)}${sufijoUid}`;
+  a.innerHTML = `
+    <div class="portada-mini">${portadaHtml(libro, inicial)}</div>
     <div class="fila-libro-principal">
       <h3>${escapeHtml(libro.titulo)}</h3>
       <p class="autor">${escapeHtml(libro.autor)}</p>
       ${(libro.generos || []).length ? `<p class="generos">${libro.generos.map(escapeHtml).join(" · ")}</p>` : ""}
     </div>
     <div class="fila-libro-datos">
-      <span class="etiqueta-estado">${ESTADO_LABEL[libro.estado] || escapeHtml(libro.estado)}</span>
-      ${pct !== null ? `<span class="num progreso">${libro.paginaActual || 0}/${libro.totalPaginas} · ${pct}%</span>` : ""}
-      ${libro.calificacion ? `<span class="num calificacion">★ ${libro.calificacion}</span>` : ""}
+      <span class="etiqueta-estado">${escapeHtml(etiquetaEstado(libro.estado))}</span>
+      ${pct !== null ? `
+        <span class="num progreso">${libro.paginaActual || 0}/${libro.totalPaginas} · ${pct}%</span>
+        <div class="barra-progreso mini-progreso" role="progressbar" aria-label="Progreso de lectura"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(pct, 100)}">
+          <div class="barra-progreso-relleno" style="width:${Math.min(pct, 100)}%"></div>
+        </div>` : ""}
+      ${libro.calificacion ? `<span class="num calificacion" aria-label="Calificación ${libro.calificacion} de 5">★ ${libro.calificacion}</span>` : ""}
     </div>
   `;
+  enlazarFallbackPortada(a, inicial);
+  return a;
+}
 
-  // Si la portada no carga (URL rota o bloqueada), vuelve a la inicial.
-  const img = div.querySelector(".portada-mini img");
-  if (img) {
-    img.addEventListener("error", () => {
-      img.parentElement.innerHTML = `<span>${inicial}</span>`;
-    });
+// ---------- Papelera ----------
+const listaPapelera = document.getElementById("listaPapelera");
+const papeleraVacia = document.getElementById("papeleraVacia");
+const estadoPapelera = document.getElementById("estadoPapelera");
+const contadorPapelera = document.getElementById("contadorPapelera");
+
+function actualizarContadorPapelera() {
+  contadorPapelera.hidden = !librosPapelera.length;
+  contadorPapelera.textContent = librosPapelera.length;
+}
+
+function avisarPapelera(texto, esError = false) {
+  estadoPapelera.hidden = !texto;
+  estadoPapelera.textContent = texto || "";
+  estadoPapelera.classList.toggle("error", esError);
+}
+
+function renderPapelera() {
+  listaPapelera.innerHTML = "";
+  papeleraVacia.hidden = librosPapelera.length > 0;
+  librosPapelera.forEach(libro => {
+    const inicial = escapeHtml((libro.titulo || "?").trim().charAt(0).toUpperCase());
+    const fecha = libro.eliminadoEn?.toDate?.().toLocaleDateString("es");
+    const div = document.createElement("div");
+    div.className = "fila-libro";
+    div.innerHTML = `
+      <div class="portada-mini">${portadaHtml(libro, inicial)}</div>
+      <div class="fila-libro-principal">
+        <h3>${escapeHtml(libro.titulo)}</h3>
+        <p class="autor">${escapeHtml(libro.autor)}</p>
+        ${fecha ? `<p class="generos">En la papelera desde el ${escapeHtml(fecha)}</p>` : ""}
+      </div>
+      <div class="fila-libro-datos acciones-papelera">
+        <button type="button" class="boton-fantasma btn-restaurar">Restaurar</button>
+        <button type="button" class="boton-fantasma boton-borrar btn-eliminar-def">Eliminar definitivamente</button>
+      </div>`;
+    enlazarFallbackPortada(div, inicial);
+    div.querySelector(".btn-restaurar").addEventListener("click", () => restaurarLibro(libro));
+    div.querySelector(".btn-eliminar-def").addEventListener("click", () => eliminarDefinitivamente(libro));
+    listaPapelera.appendChild(div);
+  });
+}
+
+async function restaurarLibro(libro) {
+  avisarPapelera("");
+  try {
+    await restaurarDePapelera(libro.id);
+    await cargarLibros();
+    avisarPapelera(`«${libro.titulo}» volvió a tu biblioteca.`);
+  } catch (err) {
+    avisarPapelera("No se pudo restaurar: " + err.message, true);
   }
-  return div;
+}
+
+async function eliminarDefinitivamente(libro) {
+  avisarPapelera("");
+  let c;
+  try {
+    c = await contarContenido(libro.id);
+  } catch (err) {
+    avisarPapelera("No se pudo preparar la eliminación: " + err.message, true);
+    return;
+  }
+  const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+  const ok = await confirmarAccion({
+    titulo: "Eliminar definitivamente",
+    mensaje: [
+      "Se eliminará ", negrita(libro.titulo), " junto con su contenido: ",
+      `${plural(c.capitulos, "capítulo", "capítulos")}, ${plural(c.personajes, "personaje", "personajes")}, `,
+      `${plural(c.citas, "cita", "citas")} y ${plural(c.conceptos, "concepto", "conceptos")}.`
+    ],
+    aviso: "Esta acción no se puede deshacer. Si quieres conservar una copia, cancela y usa antes «Descargar respaldo» en la biblioteca.",
+    textoConfirmar: "Eliminar definitivamente",
+    onConfirmar: (progreso) => eliminarLibroDefinitivo(libro.id, progreso)
+  });
+  if (!ok) return;
+  await cargarLibros();
+  avisarPapelera(`«${libro.titulo}» se eliminó definitivamente.`);
 }
 
 // ---------- Respaldo ----------
@@ -312,7 +552,7 @@ inputRespaldo.addEventListener("change", async () => {
     El archivo <strong>${escapeHtml(archivo.name)}</strong>${fechaTxt ? ` (exportado el ${escapeHtml(fechaTxt)})` : ""}
     contiene <strong>${r.totalLibros}</strong> libro${r.totalLibros === 1 ? "" : "s"}
     y <strong>${r.totalItems}</strong> elementos (capítulos, personajes, citas y conceptos).
-    Ahora tienes <strong>${todosLosLibros.length}</strong> libro${todosLosLibros.length === 1 ? "" : "s"}.
+    Ahora tienes <strong>${todosLosLibros.length + librosPapelera.length}</strong> libro${todosLosLibros.length + librosPapelera.length === 1 ? "" : "s"}${librosPapelera.length ? ` (${librosPapelera.length} en la papelera)` : ""}.
     ${r.omitidos ? `<br><small>Se omitirán ${r.omitidos} libro${r.omitidos === 1 ? "" : "s"} de otros usuarios que vienen en el archivo.</small>` : ""}`;
   modalError.hidden = true;
   btnConfirmarRestaurar.disabled = false;
@@ -405,7 +645,7 @@ function renderCitas() {
   const lista = citasCache.filter(c => {
     if (favoritas && !c.favorita) return false;
     if (etiqueta && (c.etiqueta || "").trim() !== etiqueta) return false;
-    if (texto && !norm([c.texto, c.nota, c.etiqueta, c.libroTitulo, c.libroAutor].join(" ")).includes(texto)) return false;
+    if (texto && !norm([c.texto, aTextoPlano(c.nota), c.etiqueta, c.libroTitulo, c.libroAutor].join(" ")).includes(texto)) return false;
     return true;
   });
 
@@ -429,7 +669,7 @@ function renderCitas() {
         · ${escapeHtml(c.libroAutor)}${c.pagina ? " · pág. " + c.pagina : ""}${c.etiqueta ? " · " + escapeHtml(c.etiqueta) : ""}
         ${c.favorita ? `<span class="chip favorita">★</span>` : ""}
       </p>
-      ${c.nota ? `<p class="meta">${escapeHtml(c.nota)}</p>` : ""}
+      ${c.nota ? `<div class="texto-formato meta">${renderizarHTML(c.nota)}</div>` : ""}
       <button type="button" class="boton-fantasma btn-copiar">Copiar</button>
     `;
     div.querySelector(".btn-copiar").addEventListener("click", async (e) => {

@@ -1,0 +1,61 @@
+// Reglas de Firestore de la Bitácora de lectura.
+//
+// FUENTE VERSIONADA: copia literal de las reglas publicadas en Firebase Console
+// (recuperadas el 2026-10-13). La lógica NO se ha modificado; solo se añadieron
+// comentarios. Cualquier cambio debe probarse antes con docs/PRUEBAS.md.
+//
+// Publicar con Firebase CLI:  firebase deploy --only firestore:rules
+//
+// Notas de diseño que dependen de estas reglas (ver docs/FIREBASE.md §5):
+//  - Para escribir o leer una subcolección se hace get() del libro padre: por eso
+//    al eliminar un libro se borran PRIMERO sus ítems y al final el libro.
+//  - La papelera (campo libros.eliminadoEn) es una actualización normal del libro,
+//    que el dueño activo ya tiene permitida.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function miPerfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+    function esAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && miPerfil().rol == 'Admin';
+    }
+    function estaActivo() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && miPerfil().estado == 'Activo';
+    }
+
+    match /usuarios/{uid} {
+      allow create: if esAdmin()
+        || (request.auth != null && request.auth.uid == uid
+            && request.resource.data.rol == 'Lector'
+            && request.resource.data.estado == 'Pendiente');
+      allow read: if request.auth != null && (request.auth.uid == uid || esAdmin());
+      allow update, delete: if esAdmin();
+    }
+
+    match /libros/{libroId} {
+      allow create: if request.auth != null && estaActivo()
+                     && request.resource.data.propietarioUid == request.auth.uid;
+
+      allow read: if request.auth != null &&
+                     ((resource.data.propietarioUid == request.auth.uid && estaActivo()) || esAdmin());
+
+      allow update, delete: if request.auth != null && estaActivo()
+                     && resource.data.propietarioUid == request.auth.uid;
+
+      match /{subcoleccion}/{docId} {
+        allow read: if request.auth != null && (
+          (get(/databases/$(database)/documents/libros/$(libroId)).data.propietarioUid == request.auth.uid && estaActivo())
+          || esAdmin()
+        );
+        allow write: if request.auth != null && estaActivo()
+          && get(/databases/$(database)/documents/libros/$(libroId)).data.propietarioUid == request.auth.uid;
+      }
+    }
+  }
+}

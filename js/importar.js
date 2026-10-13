@@ -130,7 +130,7 @@ export async function restaurarRespaldo(preparado, onProgreso) {
   const rutasNuevas = new Set();
 
   for (const l of preparado.libros) {
-    const { creadoEn, actualizadoEn, propietarioUid, ...resto } = l.campos;
+    const { creadoEn, actualizadoEn, propietarioUid, eliminadoEn, ...resto } = l.campos;
     const ruta = ["libros", l.id];
     escrituras.push({
       ruta,
@@ -138,7 +138,9 @@ export async function restaurarRespaldo(preparado, onProgreso) {
         ...resto,
         propietarioUid: uid,
         creadoEn: aTimestamp(creadoEn),
-        actualizadoEn: aTimestamp(actualizadoEn)
+        actualizadoEn: aTimestamp(actualizadoEn),
+        // Papelera: un libro eliminado (borrado lógico) vuelve a la papelera al restaurar.
+        ...(eliminadoEn ? { eliminadoEn: aTimestamp(eliminadoEn) } : {})
       }
     });
     rutasNuevas.add(ruta.join("/"));
