@@ -4,7 +4,7 @@ Aplicación web para organizar una biblioteca personal y registrar el avance de 
 
 El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScript nativos. Firebase Authentication y Cloud Firestore proporcionan el inicio de sesión y la persistencia de datos. El sitio se publica en **Netlify**; no usa GitHub Pages.
 
-> Para configurar Firebase, consulta [docs/FIREBASE.md](docs/FIREBASE.md). La hoja de ruta y las especificaciones propuestas para las próximas etapas están en [RoadMap.md](RoadMap.md).
+> Para configurar Firebase, consulta [docs/FIREBASE.md](docs/FIREBASE.md).
 
 ## Funcionalidades actuales
 
