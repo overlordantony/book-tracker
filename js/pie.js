@@ -86,35 +86,149 @@ if (document.readyState === "loading") {
   montarPie();
 }
 
-// --- LÓGICA DE INSTALACIÓN PWA ---
-let deferredPrompt;
 
-// 1. Guardar el evento del navegador cuando la app es instalable
-window.addEventListener('beforeinstallprompt', (e) => {
+/* =====================================================
+   INSTALACIÓN PWA — MULTINAVEGADOR
+   Chrome, Edge, Safari y Firefox
+   Conserva el SVG y el diseño original del botón
+===================================================== */
+
+let deferredPrompt = null;
+
+const esIOS =
+  /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" &&
+   navigator.maxTouchPoints > 1);
+
+const esAndroid = /Android/i.test(navigator.userAgent);
+
+const esSafari =
+  /Safari/i.test(navigator.userAgent) &&
+  !/Chrome|CriOS|Edg|EdgiOS|FxiOS|OPR/i.test(
+    navigator.userAgent
+  );
+
+const esFirefox =
+  /Firefox|FxiOS/i.test(navigator.userAgent);
+
+// Comprobar si se ejecuta como aplicación instalada
+function appInstalada() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
+
+// Mostrar u ocultar el botón sin tocar su contenido
+function actualizarBotonInstalar() {
+  const btn = document.getElementById("btn-instalar");
+  if (!btn) return;
+
+  btn.hidden = appInstalada();
+}
+
+// Guardar el evento nativo de instalación
+window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  const btn = document.getElementById('btn-instalar');
-  if (btn) btn.hidden = false;
+  actualizarBotonInstalar();
 });
 
-// 2. Escuchar el clic del botón sin importar cuándo se inyecte en el DOM
-document.addEventListener('click', async (e) => {
-  if (!e.target.closest('#btn-instalar')) return;
-  if (!deferredPrompt) return;
+// Capturar el clic incluso si el pie se inyecta después
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#btn-instalar");
+  if (!btn) return;
 
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
+  e.preventDefault();
 
-  if (outcome === 'accepted') {
-    const btn = document.getElementById('btn-instalar');
-    if (btn) btn.hidden = true;
+  if (appInstalada()) return;
+
+  // Chrome y Edge: instalación nativa
+  if (deferredPrompt) {
+    const promptActual = deferredPrompt;
+    deferredPrompt = null;
+
+    try {
+      await promptActual.prompt();
+
+      const { outcome } = await promptActual.userChoice;
+
+      if (outcome === "accepted") {
+        btn.hidden = true;
+      }
+    } catch (error) {
+      console.error("Error al instalar:", error);
+      mostrarGuiaInstalacion();
+    }
+
+    return;
   }
-  deferredPrompt = null;
+
+  // Safari, Firefox y navegadores sin prompt
+  mostrarGuiaInstalacion();
 });
 
-// 3. Ocultar el botón si el sistema confirma la instalación
-window.addEventListener('appinstalled', () => {
-  const btn = document.getElementById('btn-instalar');
-  if (btn) btn.hidden = true;
+// Guía alternativa de instalación
+function mostrarGuiaInstalacion() {
+  let mensaje = "";
+
+  if (esIOS) {
+    mensaje =
+      "INSTALAR BITÁCORA\n\n" +
+      "1. Abre la página en Safari.\n" +
+      "2. Pulsa el botón Compartir.\n" +
+      "3. Selecciona Añadir a pantalla de inicio.\n" +
+      "4. Confirma pulsando Añadir.\n\n" +
+      "¡Listo! Bitácora aparecerá entre tus apps.";
+  } else if (esAndroid) {
+    mensaje =
+      "INSTALAR BITÁCORA\n\n" +
+      "1. Abre el menú de tu navegador (⋮).\n" +
+      "2. Selecciona Instalar aplicación o " +
+      "Añadir a pantalla de inicio.\n" +
+      "3. Confirma la instalación.";
+  } else if (esSafari) {
+    mensaje =
+      "INSTALAR BITÁCORA\n\n" +
+      "En Safari para macOS:\n" +
+      "1. Abre el menú Archivo.\n" +
+      "2. Selecciona Añadir al Dock.\n" +
+      "3. Confirma la instalación.";
+  } else if (esFirefox) {
+    mensaje =
+      "INSTALAR BITÁCORA\n\n" +
+      "Busca la opción para añadir este sitio " +
+      "como aplicación en la barra de direcciones " +
+      "o en el menú de Firefox.\n\n" +
+      "Esta función depende de tu versión " +
+      "y sistema operativo.";
+  } else {
+    mensaje =
+      "Para instalar Bitácora, abre el menú " +
+      "del navegador y busca Instalar aplicación.";
+  }
+
+  alert(mensaje);
+}
+
+// Instalación confirmada
+window.addEventListener("appinstalled", () => {
   deferredPrompt = null;
+  actualizarBotonInstalar();
 });
+
+// Actualizar al regresar a la página
+window.addEventListener("pageshow", () => {
+  actualizarBotonInstalar();
+});
+
+// Inicializar después de montar el pie
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    actualizarBotonInstalar
+  );
+} else {
+  actualizarBotonInstalar();
+}
+

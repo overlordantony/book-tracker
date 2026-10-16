@@ -1,32 +1,43 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bitácora de lectura</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
-<script type="module" src="js/theme.js"></script>
-<link rel="manifest" href="manifest.json">
-<!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<meta name="theme-color" content="#12151a">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script type="module" src="js/pwa.js"></script>
-<!-- Pie de página fijo (se edita en js/pie.js) -->
-<script type="module" src="js/pie.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bitácora de lectura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/theme.js"></script>
+  <link rel="manifest" href="manifest.json">
+  <!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <meta name="theme-color" content="#12151a">
+  <!-- Compatibilidad con Apple -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" ontent="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bitácora">
+  <!-- Icono para iPhone y iPad -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <script type="module" src="js/pwa.js"></script>
+  <!-- Pie de página fijo (se edita en js/pie.js) -->
+  <script type="module" src="js/pie.js"></script>
 </head>
+
 <body class="pagina-app">
 
   <header class="barra">
-    <a class="logo-enlace" href="app.html" aria-label="Ir a la biblioteca"><img class="logo" src="icons/icon-192.png" alt="" width="40" height="40"></a>
+    <a class="logo-enlace" href="app.html" aria-label="Ir a la biblioteca"><img class="logo" src="icons/icon-192.png"
+        alt="" width="40" height="40"></a>
     <h1>Bitácora de lectura</h1>
     <div class="acciones">
       <button id="btnTema" class="boton-tema"></button>
       <a id="linkLector" href="lector.html" class="boton-fantasma" style="text-decoration:none;">Lector</a>
-      <a id="linkAdmin" href="admin.html" class="boton-fantasma" style="text-decoration:none; display:none;">Administración</a>
+      <a id="linkAdmin" href="admin.html" class="boton-fantasma"
+        style="text-decoration:none; display:none;">Administración</a>
       <button id="btnSalir" class="boton-fantasma">Salir</button>
     </div>
   </header>
@@ -35,208 +46,216 @@
 
   <div id="contenidoApp" hidden>
 
-  <p id="avisoVistaAjena" class="vacio" hidden></p>
+    <p id="avisoVistaAjena" class="vacio" hidden></p>
 
-  <nav class="pestañas">
-    <button class="pestaña activa" data-vista="biblioteca">Biblioteca</button>
-    <button class="pestaña" data-vista="estadisticas">Estadísticas</button>
-    <button class="pestaña" data-vista="citas">Citas</button>
-    <button class="pestaña" id="pestañaPapelera" data-vista="papelera">Papelera <span id="contadorPapelera" class="contador-pestaña" hidden></span></button>
-    <button class="pestaña" id="pestañaAgregar" data-vista="agregar">Agregar libro</button>
-  </nav>
+    <nav class="pestañas">
+      <button class="pestaña activa" data-vista="biblioteca">Biblioteca</button>
+      <button class="pestaña" data-vista="estadisticas">Estadísticas</button>
+      <button class="pestaña" data-vista="citas">Citas</button>
+      <button class="pestaña" id="pestañaPapelera" data-vista="papelera">Papelera <span id="contadorPapelera"
+          class="contador-pestaña" hidden></span></button>
+      <button class="pestaña" id="pestañaAgregar" data-vista="agregar">Agregar libro</button>
+    </nav>
 
-  <main>
-    <section id="vistaBiblioteca" class="vista">
-      <div class="barra-herramientas">
-        <div class="fila-busqueda">
-          <input type="search" id="buscador" placeholder="Buscar por título, autor, género o etiqueta…" aria-label="Buscar libros">
-          <select id="orden" aria-label="Ordenar por">
-            <option value="reciente">Más reciente</option>
-            <option value="titulo">Título (A–Z)</option>
-            <option value="autor">Autor (A–Z)</option>
-            <option value="progreso">% leído</option>
-            <option value="calificacion">Calificación</option>
-          </select>
-          <div class="segmentos" role="group" aria-label="Tipo de vista">
-            <button type="button" id="btnVistaLista" class="segmento activo" aria-pressed="true">Lista</button>
-            <button type="button" id="btnVistaCuadricula" class="segmento" aria-pressed="false">Cuadrícula</button>
+    <main>
+      <section id="vistaBiblioteca" class="vista">
+        <div class="barra-herramientas">
+          <div class="fila-busqueda">
+            <input type="search" id="buscador" placeholder="Buscar por título, autor, género o etiqueta…"
+              aria-label="Buscar libros">
+            <select id="orden" aria-label="Ordenar por">
+              <option value="reciente">Más reciente</option>
+              <option value="titulo">Título (A–Z)</option>
+              <option value="autor">Autor (A–Z)</option>
+              <option value="progreso">% leído</option>
+              <option value="calificacion">Calificación</option>
+            </select>
+            <div class="segmentos" role="group" aria-label="Tipo de vista">
+              <button type="button" id="btnVistaLista" class="segmento activo" aria-pressed="true">Lista</button>
+              <button type="button" id="btnVistaCuadricula" class="segmento" aria-pressed="false">Cuadrícula</button>
+            </div>
+          </div>
+
+          <details class="panel-filtros" id="panelFiltros">
+            <summary>Filtros <span id="contadorFiltros" class="contador-pestaña" hidden></span></summary>
+            <div class="filtros-grid">
+              <label>Estado
+                <select id="filtroEstado">
+                  <option value="">Todos</option>
+                  <option value="leyendo">Leyendo</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="pausado">Pausado</option>
+                  <option value="terminado">Terminado</option>
+                  <option value="descartado">Descartado</option>
+                </select>
+              </label>
+              <label>Género
+                <select id="filtroGenero">
+                  <option value="">Todos</option>
+                </select>
+              </label>
+              <label>Etiqueta
+                <select id="filtroEtiqueta">
+                  <option value="">Todas</option>
+                </select>
+              </label>
+              <label>Formato
+                <select id="filtroFormato">
+                  <option value="">Todos</option>
+                  <option value="fisico">Físico</option>
+                  <option value="digital">Digital</option>
+                  <option value="audiolibro">Audiolibro</option>
+                </select>
+              </label>
+              <label>Calificación
+                <select id="filtroCalificacion">
+                  <option value="">Cualquiera</option>
+                  <option value="5">5 ★</option>
+                  <option value="4+">4 ★ o más</option>
+                  <option value="3+">3 ★ o más</option>
+                  <option value="sin">Sin calificar</option>
+                </select>
+              </label>
+              <label>Progreso
+                <select id="filtroProgreso">
+                  <option value="">Cualquiera</option>
+                  <option value="no-iniciado">No iniciado (0 %)</option>
+                  <option value="en-curso">En curso (1–99 %)</option>
+                  <option value="completo">Completo (100 %)</option>
+                  <option value="sin-total">Sin total de páginas</option>
+                </select>
+              </label>
+            </div>
+          </details>
+
+          <div id="filtrosActivos" class="filtros-activos" hidden></div>
+
+          <div class="resumen-filtro">
+            <span id="contadorLibros" class="num" role="status" aria-live="polite"></span>
+            <div class="botones-respaldo">
+              <button type="button" id="btnRespaldo" class="boton-fantasma">Descargar respaldo</button>
+              <button type="button" id="btnCargarRespaldo" class="boton-fantasma">Cargar respaldo</button>
+              <!-- Mismo formato que genera "Descargar respaldo": archivo .json -->
+              <input type="file" id="inputRespaldo" accept=".json,application/json" hidden>
+            </div>
           </div>
         </div>
+        <p id="bibliotecaVacia" class="vacio" hidden></p>
+        <div id="listaLibros" class="lista-libros"></div>
+        <div class="mas-libros"><button type="button" id="btnMasLibros" class="boton-fantasma" hidden></button></div>
+      </section>
 
-        <details class="panel-filtros" id="panelFiltros">
-          <summary>Filtros <span id="contadorFiltros" class="contador-pestaña" hidden></span></summary>
-          <div class="filtros-grid">
-            <label>Estado
-              <select id="filtroEstado">
-                <option value="">Todos</option>
-                <option value="leyendo">Leyendo</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="pausado">Pausado</option>
-                <option value="terminado">Terminado</option>
-                <option value="descartado">Descartado</option>
-              </select>
-            </label>
-            <label>Género
-              <select id="filtroGenero"><option value="">Todos</option></select>
-            </label>
-            <label>Etiqueta
-              <select id="filtroEtiqueta"><option value="">Todas</option></select>
-            </label>
-            <label>Formato
-              <select id="filtroFormato">
-                <option value="">Todos</option>
-                <option value="fisico">Físico</option>
-                <option value="digital">Digital</option>
-                <option value="audiolibro">Audiolibro</option>
-              </select>
-            </label>
-            <label>Calificación
-              <select id="filtroCalificacion">
-                <option value="">Cualquiera</option>
-                <option value="5">5 ★</option>
-                <option value="4+">4 ★ o más</option>
-                <option value="3+">3 ★ o más</option>
-                <option value="sin">Sin calificar</option>
-              </select>
-            </label>
-            <label>Progreso
-              <select id="filtroProgreso">
-                <option value="">Cualquiera</option>
-                <option value="no-iniciado">No iniciado (0 %)</option>
-                <option value="en-curso">En curso (1–99 %)</option>
-                <option value="completo">Completo (100 %)</option>
-                <option value="sin-total">Sin total de páginas</option>
-              </select>
-            </label>
-          </div>
-        </details>
+      <section id="vistaPapelera" class="vista" hidden>
+        <p class="aviso-papelera">Los libros de la papelera no aparecen en la biblioteca, las estadísticas ni las citas.
+          Puedes <strong>restaurarlos</strong> o <strong>eliminarlos definitivamente</strong>; esto último borra también
+          sus capítulos, personajes, citas y conceptos y no se puede deshacer.</p>
+        <p id="estadoPapelera" class="estado-accion" role="status" aria-live="polite" hidden></p>
+        <p id="papeleraVacia" class="vacio" hidden>La papelera está vacía.</p>
+        <div id="listaPapelera" class="lista-libros"></div>
+      </section>
 
-        <div id="filtrosActivos" class="filtros-activos" hidden></div>
+      <section id="vistaEstadisticas" class="vista" hidden>
+        <div id="contenedorEstadisticas"></div>
+      </section>
 
-        <div class="resumen-filtro">
-          <span id="contadorLibros" class="num" role="status" aria-live="polite"></span>
-          <div class="botones-respaldo">
-            <button type="button" id="btnRespaldo" class="boton-fantasma">Descargar respaldo</button>
-            <button type="button" id="btnCargarRespaldo" class="boton-fantasma">Cargar respaldo</button>
-            <!-- Mismo formato que genera "Descargar respaldo": archivo .json -->
-            <input type="file" id="inputRespaldo" accept=".json,application/json" hidden>
+      <section id="vistaCitas" class="vista" hidden>
+        <div class="barra-herramientas">
+          <input type="search" id="buscadorCitas" placeholder="Buscar en las citas de todos tus libros…">
+          <div class="filtros">
+            <select id="filtroEtiquetaCita">
+              <option value="">Todas las etiquetas</option>
+            </select>
+            <label class="check"><input type="checkbox" id="soloFavoritas"> Solo favoritas</label>
           </div>
         </div>
-      </div>
-      <p id="bibliotecaVacia" class="vacio" hidden></p>
-      <div id="listaLibros" class="lista-libros"></div>
-      <div class="mas-libros"><button type="button" id="btnMasLibros" class="boton-fantasma" hidden></button></div>
-    </section>
+        <div id="listaCitasGlobal"></div>
+      </section>
 
-    <section id="vistaPapelera" class="vista" hidden>
-      <p class="aviso-papelera">Los libros de la papelera no aparecen en la biblioteca, las estadísticas ni las citas.
-        Puedes <strong>restaurarlos</strong> o <strong>eliminarlos definitivamente</strong>; esto último borra también
-        sus capítulos, personajes, citas y conceptos y no se puede deshacer.</p>
-      <p id="estadoPapelera" class="estado-accion" role="status" aria-live="polite" hidden></p>
-      <p id="papeleraVacia" class="vacio" hidden>La papelera está vacía.</p>
-      <div id="listaPapelera" class="lista-libros"></div>
-    </section>
+      <section id="vistaAgregar" class="vista" hidden>
+        <form id="formLibro" class="formulario">
 
-    <section id="vistaEstadisticas" class="vista" hidden>
-      <div id="contenedorEstadisticas"></div>
-    </section>
+          <fieldset>
+            <legend>Datos básicos</legend>
 
-    <section id="vistaCitas" class="vista" hidden>
-      <div class="barra-herramientas">
-        <input type="search" id="buscadorCitas" placeholder="Buscar en las citas de todos tus libros…">
-        <div class="filtros">
-          <select id="filtroEtiquetaCita"><option value="">Todas las etiquetas</option></select>
-          <label class="check"><input type="checkbox" id="soloFavoritas"> Solo favoritas</label>
-        </div>
-      </div>
-      <div id="listaCitasGlobal"></div>
-    </section>
+            <label for="titulo">Título *</label>
+            <input type="text" id="titulo" required>
 
-    <section id="vistaAgregar" class="vista" hidden>
-      <form id="formLibro" class="formulario">
+            <label for="autor">Autor *</label>
+            <input type="text" id="autor" required>
 
-        <fieldset>
-          <legend>Datos básicos</legend>
+            <label for="portadaUrl">URL de portada</label>
+            <input type="url" id="portadaUrl" placeholder="https://...">
 
-          <label for="titulo">Título *</label>
-          <input type="text" id="titulo" required>
+            <label for="url">URL de tienda (si lo compraste digital)</label>
+            <input type="url" id="url" placeholder="https://...">
 
-          <label for="autor">Autor *</label>
-          <input type="text" id="autor" required>
+            <label for="generos">Géneros (separados por coma)</label>
+            <input type="text" id="generos" placeholder="ciencia ficción, distopía">
 
-          <label for="portadaUrl">URL de portada</label>
-          <input type="url" id="portadaUrl" placeholder="https://...">
+            <label for="etiquetas">Etiquetas (separadas por coma)</label>
+            <input type="text" id="etiquetas" placeholder="club de lectura, pendiente de relectura">
+          </fieldset>
 
-          <label for="url">URL de tienda (si lo compraste digital)</label>
-          <input type="url" id="url" placeholder="https://...">
+          <fieldset>
+            <legend>Progreso</legend>
 
-          <label for="generos">Géneros (separados por coma)</label>
-          <input type="text" id="generos" placeholder="ciencia ficción, distopía">
+            <label for="estado">Estado</label>
+            <select id="estado">
+              <option value="Pendiente">Pendiente</option>
+              <option value="leyendo" selected>Leyendo</option>
+              <option value="pausado">Pausado</option>
+              <option value="terminado">Terminado</option>
+              <option value="descartado">Descartado</option>
+            </select>
 
-          <label for="etiquetas">Etiquetas (separadas por coma)</label>
-          <input type="text" id="etiquetas" placeholder="club de lectura, pendiente de relectura">
-        </fieldset>
+            <label for="formato">Formato</label>
+            <select id="formato">
+              <option value="fisico">Físico</option>
+              <option value="digital">Digital</option>
+              <option value="audiolibro">Audiolibro</option>
+            </select>
 
-        <fieldset>
-          <legend>Progreso</legend>
-
-          <label for="estado">Estado</label>
-          <select id="estado">
-            <option value="Pendiente">Pendiente</option>
-            <option value="leyendo" selected>Leyendo</option>
-            <option value="pausado">Pausado</option>
-            <option value="terminado">Terminado</option>
-            <option value="descartado">Descartado</option>
-          </select>
-
-          <label for="formato">Formato</label>
-          <select id="formato">
-            <option value="fisico">Físico</option>
-            <option value="digital">Digital</option>
-            <option value="audiolibro">Audiolibro</option>
-          </select>
-
-          <div class="fila">
-            <div>
-              <label for="totalPaginas">Total de páginas</label>
-              <input type="number" id="totalPaginas" min="0">
+            <div class="fila">
+              <div>
+                <label for="totalPaginas">Total de páginas</label>
+                <input type="number" id="totalPaginas" min="0">
+              </div>
+              <div>
+                <label for="paginaActual">Página actual</label>
+                <input type="number" id="paginaActual" min="0" value="0">
+              </div>
             </div>
-            <div>
-              <label for="paginaActual">Página actual</label>
-              <input type="number" id="paginaActual" min="0" value="0">
+
+            <div class="fila">
+              <div>
+                <label for="fechaInicio">Fecha de inicio</label>
+                <input type="date" id="fechaInicio">
+              </div>
+              <div>
+                <label for="fechaFin">Fecha de fin</label>
+                <input type="date" id="fechaFin">
+              </div>
             </div>
-          </div>
 
-          <div class="fila">
-            <div>
-              <label for="fechaInicio">Fecha de inicio</label>
-              <input type="date" id="fechaInicio">
-            </div>
-            <div>
-              <label for="fechaFin">Fecha de fin</label>
-              <input type="date" id="fechaFin">
-            </div>
-          </div>
+            <label for="calificacion">Calificación (1-5)</label>
+            <input type="number" id="calificacion" min="1" max="5">
+          </fieldset>
 
-          <label for="calificacion">Calificación (1-5)</label>
-          <input type="number" id="calificacion" min="1" max="5">
-        </fieldset>
+          <fieldset>
+            <legend>Extra</legend>
 
-        <fieldset>
-          <legend>Extra</legend>
+            <label for="notas">Notas</label>
+            <textarea id="notas" rows="3"></textarea>
 
-          <label for="notas">Notas</label>
-          <textarea id="notas" rows="3"></textarea>
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" rows="2"></textarea>
+          </fieldset>
 
-          <label for="observaciones">Observaciones</label>
-          <textarea id="observaciones" rows="2"></textarea>
-        </fieldset>
-
-        <p id="formError" class="error" hidden></p>
-        <button type="submit">Guardar libro</button>
-      </form>
-    </section>
-  </main>
+          <p id="formError" class="error" hidden></p>
+          <button type="submit">Guardar libro</button>
+        </form>
+      </section>
+    </main>
 
   </div>
 
@@ -245,8 +264,10 @@
     <div class="modal-caja">
       <h3 id="modalRestaurarTitulo">Restaurar respaldo</h3>
       <p id="modalRestaurarResumen" class="modal-resumen"></p>
-      <p class="modal-aviso"><strong>Se sobrescribirán tus datos actuales.</strong> Los libros que no estén en el archivo se eliminarán de tu biblioteca. Esta acción no se puede deshacer.</p>
-      <button type="button" id="btnCopiaActual" class="enlace-boton">Descargar una copia de lo actual antes de continuar</button>
+      <p class="modal-aviso"><strong>Se sobrescribirán tus datos actuales.</strong> Los libros que no estén en el
+        archivo se eliminarán de tu biblioteca. Esta acción no se puede deshacer.</p>
+      <button type="button" id="btnCopiaActual" class="enlace-boton">Descargar una copia de lo actual antes de
+        continuar</button>
       <p id="modalRestaurarError" class="error" hidden></p>
       <div class="modal-acciones">
         <button type="button" id="btnCancelarRestaurar" class="boton-fantasma">Cancelar</button>
@@ -258,4 +279,5 @@
   <script type="module" src="js/app.js"></script>
   <script type="module" src="js/google-analytics.js"></script>
 </body>
+
 </html>
