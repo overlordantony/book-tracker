@@ -15,6 +15,7 @@ import {
   eliminarLibroDefinitivo,
   contarContenido
 } from "./db.js";
+import { obtenerLecturaDeLibro } from "./lecturas.js";
 import { confirmarAccion, negrita } from "./modal.js";
 import { renderizarHTML, montarEditor } from "./formato.js";
 
@@ -112,6 +113,7 @@ vigilarSesion(async (usuario) => {
   configurarPapelera();
   configurarEdicionLibro(soloLectura);
   configurarSubpestañas();
+  if (esPropietario && !enPapelera(libroActual)) configurarLector();
 
   $("btnExportarGuia").addEventListener("click", async (e) => {
     const btn = e.currentTarget;
@@ -271,6 +273,18 @@ vigilarSesion(async (usuario) => {
 });
 
 // ---------- Cabecera, resumen, notas y actividad ----------
+
+// Botón "Leer en la app": abre el lector integrado (lector.html) en el contexto de este libro.
+// Si ya hay una lectura vinculada (colección `lecturas`), muestra el avance y reanuda donde se dejó.
+async function configurarLector() {
+  const enlace = $("btnLeer");
+  enlace.href = `lector.html?libro=${encodeURIComponent(libroId)}`;
+  enlace.hidden = false;
+  try {
+    const lectura = await obtenerLecturaDeLibro(libroId);
+    if (lectura) enlace.textContent = `Continuar leyendo (${lectura.pct || 0}%)`;
+  } catch { /* sin conexión: queda el texto por defecto */ }
+}
 
 function pintarTodo() {
   pintarCabecera(libroVigente);

@@ -1,0 +1,12 @@
+/* nube.css — piezas del lector integrado en la bitácora: puerta de acceso, estado de sincronización y estado vacío */
+#puerta{position:fixed;inset:0;z-index:200;background:var(--bg);color:var(--fg);display:grid;place-content:center;justify-items:center;gap:1rem;text-align:center;padding:2rem}
+#puerta p{margin:0}
+#volver{text-decoration:none;flex:none;min-width:44px;padding:.5rem .7rem}
+#sync{border:0;background:none;font-size:.72rem;min-height:32px;padding:0 .4rem;opacity:.75;white-space:nowrap}
+#sync[data-estado=guardando]{color:var(--ac)}
+#sync[data-estado=offline]{color:#b8860b}
+#sync[data-estado=error]{color:#d33;opacity:1;font-weight:600}
+#vacio{background:var(--bg)}
+#vacio p{margin:.35rem 0;max-width:34rem}
+#ajustes small{opacity:.7;font-size:.75rem;line-height:1.35}
+#sidebar .libro small + small{color:var(--ac)}

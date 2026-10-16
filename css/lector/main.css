@@ -1,0 +1,18 @@
+/* main.css — variables, temas y elementos base */
+:root{--fuente:Georgia,serif;--tam:19px;--lh:1.7;--ancho:44rem;--sw:300px}
+body{--bg:#fbfaf7;--fg:#222;--pan:#efede6;--bd:#d9d5c8;--ac:#2a6df4}
+body[data-tema=oscuro]{--bg:#16181c;--fg:#d8dadf;--pan:#20232a;--bd:#363a44;--ac:#7aa2ff}
+body[data-tema=sepia]{--bg:#f4ecd8;--fg:#4a3b28;--pan:#eadfc4;--bd:#d3c4a0;--ac:#a0602a}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px system-ui,sans-serif;display:flex;overflow:hidden}
+button,.btn,select,input{font:inherit;color:inherit}
+button,.btn{background:var(--pan);border:1px solid var(--bd);border-radius:8px;padding:.5rem .8rem;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+button:hover,.btn:hover{border-color:var(--ac)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+input[type=search],select{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:.5rem;width:100%}
+.fila{display:flex;gap:.5rem;flex-wrap:wrap}
+#ajustes{position:fixed;top:56px;right:12px;width:min(300px,calc(100% - 24px));background:var(--pan);border:1px solid var(--bd);border-radius:12px;padding:1rem;display:grid;gap:.7rem;z-index:30;box-shadow:0 8px 30px #0004}
+#ajustes label:not(.btn){display:grid;gap:.2rem}
+body.drag::after{content:"Suelta el archivo aquí";position:fixed;inset:0;display:grid;place-items:center;background:#000a;color:#fff;font-size:1.5rem;z-index:99}

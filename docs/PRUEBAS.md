@@ -61,6 +61,17 @@ Usa una cuenta de prueba **o** haz antes un respaldo (`Descargar respaldo`).
 - [ ] «Descargar respaldo» → «Cargar respaldo» con el mismo archivo: mismos libros y contenido (incluidos los de la papelera, que siguen en la papelera).
 - [ ] Un respaldo tomado **antes** de esta versión (sin `eliminadoEn`) se restaura sin errores.
 
+## 2b. Lector integrado (`lector.html`)
+
+- `node tests/sincronia.test.mjs` pasa.
+- Con la cuenta A, abre un EPUB y un PDF, avanza, subraya con nota y comprueba en Firestore `lecturas/<uid>_<huella>` (`pos`, `ann`, `propietarioUid`).
+- En otro dispositivo/navegador con la misma cuenta: el estante muestra el libro con «Falta el archivo»; al elegir el mismo archivo continúa en la misma posición y con las anotaciones.
+- Abrir un libro sin navegar **no** cambia `posTs` en Firestore.
+- Sin conexión: el indicador dice «Sin conexión»; al reconectar vuelve a «Sincronizado» con la última posición.
+- Exportar → quitar el libro → Importar restaura posición y anotaciones.
+- Rules Playground: otra cuenta no puede leer ni escribir `lecturas/<uidA>_*`; un `Admin` tampoco puede leerlas; una cuenta `Pendiente` no accede.
+- Detalle del libro: «Leer en la app» → «Continuar leyendo (N %)» tras vincular un archivo.
+
 ## 3. Reglas de Firestore (Rules Playground)
 
 Con `firestore.rules` publicadas, en **Firestore → Rules → Rules Playground** (cuentas de ejemplo):

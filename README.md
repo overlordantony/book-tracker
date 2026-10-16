@@ -18,6 +18,7 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 - **Respaldos**: descarga de la biblioteca propia como JSON e importación/restauración del respaldo con confirmación. Un administrador puede descargar un respaldo de todas las bibliotecas.
 - **Guía exportable**: genera un documento HTML autónomo con los datos y apartados de un libro.
 - **Administración**: el administrador puede crear usuarios, modificar su nombre, rol y estado, y consultar sus bibliotecas en modo de solo lectura. La interfaz explica cada estado, pide confirmación al desactivar y evita que alguien se bloquee a sí mismo o que quede la app sin administradores activos.
+- **Lector integrado (EPUB y PDF)**: `lector.html`, con botón «Leer en la app» / «Continuar leyendo (N %)» en el detalle de cada libro. Índice, búsqueda, subrayados con nota, ajustes de lectura y atajos de teclado. La posición de lectura y las anotaciones se guardan en la colección independiente `lecturas` de Firestore: al abrir otro dispositivo se continúa donde se dejó. «Exportar datos» / «Importar» generan y restauran un `.json` desde/hacia esa colección. El archivo del libro **no** se sube: queda en cada dispositivo (ver límites).
 - **Presentación**: tema oscuro/claro, diseño adaptable a móvil y escritorio, y PWA instalable con service worker.
 
 ## Límites conocidos
@@ -25,7 +26,8 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 - **Eliminar cuentas de usuario** no es posible desde la app: borrar la cuenta de Firebase Authentication y sus datos requiere una operación privilegiada (Cloud Function con Admin SDK), que no se debe resolver desde el navegador. El administrador puede dejar la cuenta en estado `Inactivo`. Tampoco hay todavía una opción para que cada usuario solicite eliminar su cuenta.
 - Las protecciones de administración (no cambiar el propio rol, conservar un administrador activo) están en la interfaz; las reglas de Firestore no las imponen. Ver las observaciones en [docs/FIREBASE.md](docs/FIREBASE.md#5-publicar-las-reglas-de-seguridad).
 - El campo de URL del libro es un enlace externo (por ejemplo, a una tienda); **no** es todavía un enlace de documento que se abra en un lector.
-- No hay lector de EPUB/PDF, carga local de documentos, anotaciones asociadas a una posición de lectura ni sincronización de posición entre dispositivos (Fases 4 a 6 de la hoja de ruta).
+- **Lector**: el archivo del libro (EPUB/PDF) no se guarda en la nube (Firestore no es un almacén de archivos; subirlo requeriría Firebase Storage). En un dispositivo nuevo se ve el libro y la posición, y hay que seleccionar el mismo archivo para continuar; se reconoce por su huella SHA-256, no por el nombre. Dos dispositivos que anoten a la vez sin conexión: gana la lista de anotaciones más reciente (una copia local que nunca se sincronizó se une en vez de perderse). Máximo 3000 anotaciones por libro. Los PDF escaneados no tienen texto seleccionable. El lector necesita HTTPS o `localhost` (usa `crypto.subtle`).
+- Las notas del lector son privadas: las reglas no permiten que un `Admin` lea `lecturas`, y esas colecciones no entran en el respaldo administrativo.
 - El formato de texto es un subconjunto fijo (sin encabezados, imágenes ni tablas). Un texto antiguo que contuviera marcas como `**así**` pasará a verse con ese formato.
 
 ## Tecnología
@@ -46,6 +48,7 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 ├── index.html             # Acceso, registro y recuperación de contraseña
 ├── app.html               # Biblioteca, citas, estadísticas y formulario de libro
 ├── detalle.html           # Detalle, edición y apartados de un libro
+├── lector.html            # Lector EPUB/PDF integrado (requiere sesión)
 ├── admin.html             # Administración básica de usuarios
 ├── manifest.json          # Metadatos de la PWA
 ├── sw.js                  # Service worker (red primero, caché de respaldo)
@@ -53,7 +56,9 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 ├── firestore.rules        # Reglas de seguridad de Firestore (fuente versionada)
 ├── RoadMap.md             # Hoja de ruta y estado de avance
 ├── tests/formato.test.mjs # Prueba automática del formato de texto (node, sin dependencias)
+├── tests/sincronia.test.mjs # Pruebas de la lógica de sincronización del lector (node)
 ├── css/styles.css         # Estilos, temas y diseño adaptable
+├── css/lector/            # Estilos del lector (propios: no se mezclan con styles.css)
 ├── icons/                 # Iconos de la app y de la PWA
 ├── docs/FIREBASE.md       # Configuración de Firebase y publicación
 ├── docs/PRUEBAS.md        # Pruebas de regresión y comprobación de reglas
@@ -74,6 +79,9 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
     ├── admin.js           # Operaciones del panel de administración
     ├── admin.page.js      # Interfaz del panel de administración
     ├── theme.js           # Tema claro/oscuro
+    ├── lecturas.js        # Acceso a la colección `lecturas` (posición y anotaciones del lector)
+    ├── lector/            # Lector: utils, epub-parser, pdf-reader, annotations, reader, navigation, settings,
+    │                      #   nube.js (sincronización), sincronia.js (lógica pura), arranque.js, PDF.js local
     ├── pie.js             # Pie de página configurable
     └── pwa.js             # Registro del service worker
 ```

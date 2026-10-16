@@ -1,8 +1,9 @@
 // Reglas de Firestore de la Bitácora de lectura.
 //
-// FUENTE VERSIONADA: copia literal de las reglas publicadas en Firebase Console
-// (recuperadas el 2026-10-13). La lógica NO se ha modificado; solo se añadieron
-// comentarios. Cualquier cambio debe probarse antes con docs/PRUEBAS.md.
+// FUENTE VERSIONADA: copia de las reglas publicadas en Firebase Console
+// (recuperadas el 2026-10-13). La lógica de /usuarios y /libros NO se ha modificado;
+// solo se añadieron comentarios. Cambio posterior: se añadió el bloque /lecturas
+// (lector integrado). Hay que volver a publicar las reglas para que el lector funcione. Cualquier cambio debe probarse antes con docs/PRUEBAS.md.
 //
 // Publicar con Firebase CLI:  firebase deploy --only firestore:rules
 //
@@ -56,6 +57,30 @@ service cloud.firestore {
         allow write: if request.auth != null && estaActivo()
           && get(/databases/$(database)/documents/libros/$(libroId)).data.propietarioUid == request.auth.uid;
       }
+    }
+
+    // Lector integrado: colección independiente con la posición de lectura y las
+    // anotaciones de cada libro leído (el archivo del libro NO se guarda aquí).
+    // Id del documento = "<uid>_<huella del archivo>". Son datos PRIVADOS: ni siquiera
+    // un Admin puede leerlos (a diferencia de la biblioteca), porque son notas personales.
+    match /lecturas/{lecturaId} {
+      function esMia() {
+        return request.auth != null && estaActivo()
+          && lecturaId.matches('^' + request.auth.uid + '_.+');
+      }
+      function datosValidos() {
+        return request.resource.data.propietarioUid == request.auth.uid
+          && (!('ann' in request.resource.data)
+              || (request.resource.data.ann is list && request.resource.data.ann.size() <= 3000));
+      }
+
+      allow create: if esMia() && datosValidos();
+      // La lectura no usa el id del documento: en una consulta de lista (where propietarioUid == uid)
+      // Firestore solo puede comprobar campos, igual que en la regla de /libros.
+      allow read: if request.auth != null && estaActivo()
+                     && resource.data.propietarioUid == request.auth.uid;
+      allow update: if esMia() && resource.data.propietarioUid == request.auth.uid && datosValidos();
+      allow delete: if esMia() && resource.data.propietarioUid == request.auth.uid;
     }
   }
 }

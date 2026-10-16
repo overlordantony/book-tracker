@@ -1,0 +1,39 @@
+/* reader.css — área de lectura, paginación en columnas, subrayados */
+#lector{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
+header,footer{display:flex;align-items:center;gap:.5rem;padding:.4rem .8rem}
+header{padding-top:max(.4rem,env(safe-area-inset-top))}
+footer{padding-bottom:max(.4rem,env(safe-area-inset-bottom));font-size:.8rem;flex-wrap:wrap}
+#cab{flex:1;text-align:center;font-size:.85rem;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#barra{flex:1;min-width:120px;accent-color:var(--ac)}
+#viewport{flex:1;min-height:0;position:relative;width:100%;max-width:var(--ancho);margin:0 auto;display:flex}
+#pagina{flex:1;min-width:0;margin:1rem 2.8rem;overflow:hidden;position:relative}
+.flecha{position:absolute;top:50%;z-index:2;transform:translateY(-50%);opacity:.4;border:0;font-size:1.8rem;background:none;padding:0 .4rem}
+#ant{left:0}#sig{right:0}
+#contenido{font-family:var(--fuente);font-size:var(--tam);line-height:var(--lh);transition:transform .3s ease;text-align:justify;hyphens:auto;overflow-wrap:break-word}
+#contenido p{margin:0 0 .8em}
+#contenido h1,#contenido h2,#contenido h3{line-height:1.25}
+#contenido img{max-width:100%;max-height:100%;object-fit:contain}
+#contenido a{color:var(--ac)}
+#contenido pre{white-space:pre-wrap}
+#contenido td,#contenido th{border:1px solid var(--bd);padding:.2em .4em}
+mark.ann{color:#111;border-radius:2px;cursor:pointer}
+mark.busq{background:#ff9800;color:#000}
+#vacio{position:absolute;inset:0;display:grid;place-items:center;text-align:center;opacity:.6;padding:2rem}
+#colores{position:fixed;z-index:40;display:flex;gap:.4rem;align-items:center;background:var(--pan);border:1px solid var(--bd);padding:.4rem;border-radius:12px;box-shadow:0 4px 20px #0005}
+#colores button{width:36px;height:36px;min-height:0;padding:0;border-radius:50%}
+#colores input{width:140px;padding:.4rem;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
+@media(max-width:767px){
+  .flecha{display:none}
+  #pagina{margin:.8rem 1.1rem}
+  #colores{inset:auto 0 0 0!important;border-radius:16px 16px 0 0;justify-content:center;flex-wrap:wrap;padding:1rem 1rem max(1rem,env(safe-area-inset-bottom))}
+  #colores button{width:48px;height:48px}
+}
+
+/* ---- PDF: página renderizada + capa de texto transparente ---- */
+.pdfpag{position:relative;margin:0 auto;background:#fff}
+.pdfpag canvas{display:block}
+.pdftxt{position:absolute;inset:0;overflow:hidden;line-height:1}
+.pdftxt span{position:absolute;white-space:pre;color:transparent;transform-origin:0 0;cursor:text}
+.pdftxt mark.ann,.pdftxt mark.busq{color:transparent;mix-blend-mode:multiply}
+body[data-tema=oscuro] .pdfpag canvas{filter:invert(.9) hue-rotate(180deg)}
+body[data-tema=sepia] .pdfpag canvas{filter:sepia(.45) contrast(.95)}

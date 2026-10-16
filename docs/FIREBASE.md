@@ -67,6 +67,7 @@ Las reglas garantizan:
 | `usuarios/{uid}` | Cada persona lee su perfil; solo un admin lista, edita o borra perfiles. Cualquiera puede **crear su propio perfil** únicamente como `rol: "Lector"` y `estado: "Pendiente"`. |
 | `libros/{id}` | Solo cuentas `Activo`. Cada una lee/escribe **solo sus libros** (`propietarioUid == su uid`). Un `Admin` lee los de todos (solo lectura). |
 | `libros/{id}/capitulos│personajes│citas│conceptos` | Mismo criterio que el libro padre (el dueño escribe; el dueño y el admin leen). |
+| `lecturas/{uid}_{huella}` | Solo cuentas `Activo`, y solo el **dueño** (`propietarioUid`) lee, crea, edita y borra; el id debe empezar por su uid y `ann` ≤ 3000 elementos. **Ni un `Admin` puede leerlas** (notas personales). |
 | Cualquier otra ruta | Denegada. |
 
 **Para publicarlas:**
@@ -212,6 +213,20 @@ El repositorio contiene páginas estáticas y módulos ES, sin comando de build.
 ### Texto con formato
 
 `notas`, `observaciones`, `capitulos.resumen`, `personajes.descripcion`, `citas.nota` y `conceptos.significado` se guardan como **texto normal con marcas** (subconjunto de Markdown): `**negrita**`, `*cursiva*`, `++subrayado++`, `~~tachado~~`, `==resaltado==`, listas con `- ` o `1. ` y enlaces `[texto](https://…)`. No se guarda HTML; el texto se escapa al mostrarlo y solo se generan etiquetas permitidas (`js/formato.js`). Los textos antiguos siguen siendo válidos sin migración.
+
+### `lecturas/{uid}_{huella}`  (lector integrado; colección independiente)
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `propietarioUid`, `huella` | string | Dueño y SHA-256 (32 hex) del archivo: identifica el mismo libro en cualquier dispositivo |
+| `titulo`, `autor`, `formato` (`epub`\|`pdf`), `tamano`, `nombreArchivo` | | Metadatos del archivo |
+| `libroId` | string \| null | Libro de la bitácora vinculado (`libros/{id}`) |
+| `pos` `{cap, frac}`, `pct`, `posTs` | map, number, number (ms) | Posición (capítulo/página y fracción), porcentaje y marca de tiempo del cliente |
+| `ann` (array), `annTs` | array<map>, number (ms) | Anotaciones `{id, cap, ini, fin, texto, color, nota, fecha}` |
+| `portadaMini` | string (dataURL JPEG) | Miniatura para el estante en otros dispositivos |
+| `version`, `creadoEn`, `ultimaLecturaEn` | | Esquema y fechas del servidor |
+
+No se guarda el archivo del libro. Para continuidad real del archivo entre dispositivos habría que añadir Firebase Storage (requiere plan Blaze y sus propias reglas).
 
 ### Formato del archivo de respaldo (`.json`)
 
