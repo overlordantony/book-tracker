@@ -4,7 +4,7 @@ Aplicación web para organizar una biblioteca personal y registrar el avance de 
 
 El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScript nativos. Firebase Authentication y Cloud Firestore proporcionan el inicio de sesión y la persistencia de datos. El sitio se publica en **Netlify**; no usa GitHub Pages.
 
-> Para configurar Firebase, consulta [docs/FIREBASE.md](docs/FIREBASE.md).
+> Para configurar Firebase, consulta [docs/FIREBASE.md](docs/FIREBASE.md). La hoja de ruta y las especificaciones propuestas para las próximas etapas están en [RoadMap.md](RoadMap.md).
 
 ## Funcionalidades actuales
 
@@ -18,6 +18,7 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 - **Respaldos**: descarga de la biblioteca propia como JSON e importación/restauración del respaldo con confirmación. Un administrador puede descargar un respaldo de todas las bibliotecas.
 - **Guía exportable**: genera un documento HTML autónomo con los datos y apartados de un libro.
 - **Administración**: el administrador puede crear usuarios, modificar su nombre, rol y estado, y consultar sus bibliotecas en modo de solo lectura. La interfaz explica cada estado, pide confirmación al desactivar y evita que alguien se bloquee a sí mismo o que quede la app sin administradores activos.
+- **Respaldo por libro**: «Exportar libro (.json)» en el detalle y «Importar libro» en la biblioteca, para guardar o compartir un solo libro con todo su contenido. Importar solo añade (siempre crea un libro nuevo); no reemplaza nada.
 - **Lector integrado (EPUB y PDF)**: `lector.html`, con botón «Leer en la app» / «Continuar leyendo (N %)» en el detalle de cada libro. Índice, búsqueda, subrayados con nota, ajustes de lectura y atajos de teclado. La posición de lectura y las anotaciones se guardan en la colección independiente `lecturas` de Firestore: al abrir otro dispositivo se continúa donde se dejó. «Exportar datos» / «Importar» generan y restauran un `.json` desde/hacia esa colección. El archivo del libro **no** se sube: queda en cada dispositivo (ver límites).
 - **Presentación**: tema oscuro/claro, diseño adaptable a móvil y escritorio, y PWA instalable con service worker.
 
@@ -57,6 +58,7 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 ├── RoadMap.md             # Hoja de ruta y estado de avance
 ├── tests/formato.test.mjs # Prueba automática del formato de texto (node, sin dependencias)
 ├── tests/sincronia.test.mjs # Pruebas de la lógica de sincronización del lector (node)
+├── tests/respaldo-libro.test.mjs # Pruebas del respaldo de un solo libro (node)
 ├── css/styles.css         # Estilos, temas y diseño adaptable
 ├── css/lector/            # Estilos del lector (propios: no se mezclan con styles.css)
 ├── icons/                 # Iconos de la app y de la PWA
@@ -75,7 +77,8 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
     ├── detalle.js         # Flujo de detalle.html
     ├── estadisticas.js    # Cálculo y presentación de estadísticas
     ├── exportar.js        # Respaldos y guía exportable
-    ├── importar.js        # Validación y restauración de respaldos
+    ├── importar.js        # Validación y restauración de respaldos; importar un libro
+    ├── respaldo-libro.js  # Armado y validación/saneado del archivo de un libro (lógica pura)
     ├── admin.js           # Operaciones del panel de administración
     ├── admin.page.js      # Interfaz del panel de administración
     ├── theme.js           # Tema claro/oscuro
@@ -92,7 +95,7 @@ El proyecto es una aplicación estática hecha con HTML, CSS y módulos JavaScri
 2. Configura Firebase siguiendo [docs/FIREBASE.md](docs/FIREBASE.md): Authentication, Firestore, perfiles y dominios autorizados.
 3. Configura la aplicación web de Firebase en `js/firebase-config.js`. El archivo contiene la configuración cliente de Firebase; no hay una plantilla `firebase-config.example.js` en este checkout. La configuración web es visible desde el navegador: la protección depende de reglas de Firestore correctamente configuradas y de las restricciones de API correspondientes.
 4. Sirve la carpeta por HTTP con un servidor local (por ejemplo, **Live Server** en VS Code). No abras las páginas con `file://`, porque los módulos ES no funcionarán correctamente.
-5. Comprueba el inicio de sesión, la lectura/escritura de datos y los respaldos antes de compartir la aplicación. La lista completa está en [docs/PRUEBAS.md](docs/PRUEBAS.md); la prueba automática del formato se ejecuta con `node tests/formato.test.mjs`.
+5. Comprueba el inicio de sesión, la lectura/escritura de datos y los respaldos antes de compartir la aplicación. La lista completa está en [docs/PRUEBAS.md](docs/PRUEBAS.md); la prueba automática del formato se ejecuta con `node tests/formato.test.mjs`, `node tests/sincronia.test.mjs` y `node tests/respaldo-libro.test.mjs`.
 
 ## Publicación en Netlify
 

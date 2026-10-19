@@ -1,7 +1,7 @@
 import { vigilarSesion, logout } from "./auth.js";
 import { iniciarToggleTema } from "./theme.js";
 import { obtenerPerfil } from "./roles.js";
-import { exportarGuia } from "./exportar.js";
+import { exportarGuia, exportarLibro } from "./exportar.js";
 import {
   obtenerLibro,
   actualizarLibro,
@@ -114,6 +114,21 @@ vigilarSesion(async (usuario) => {
   configurarEdicionLibro(soloLectura);
   configurarSubpestañas();
   if (esPropietario && !enPapelera(libroActual)) configurarLector();
+
+  $("btnExportarLibro").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Preparando…";
+    try {
+      await exportarLibro(libroId);
+    } catch (err) {
+      alert("No se pudo exportar el libro: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
+  });
 
   $("btnExportarGuia").addEventListener("click", async (e) => {
     const btn = e.currentTarget;

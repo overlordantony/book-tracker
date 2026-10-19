@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <script type="module" src="js/theme.js"></script>
   <link rel="manifest" href="manifest.json">
-  <!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
+  <!-- Favicon: usa una de las imágenes de /icons/ -->
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <meta name="theme-color" content="#12151a">
   <!-- Compatibilidad con Apple -->
@@ -135,6 +135,11 @@
             <div class="botones-respaldo">
               <button type="button" id="btnRespaldo" class="boton-fantasma">Descargar respaldo</button>
               <button type="button" id="btnCargarRespaldo" class="boton-fantasma">Cargar respaldo</button>
+              <!-- Respaldo de UN libro (se exporta desde el detalle del libro): solo añade, nunca reemplaza -->
+              <button type="button" id="btnImportarLibro" class="boton-fantasma"
+                title="Añade a tu biblioteca un libro exportado con «Exportar libro (.json)»; no modifica ni borra nada">Importar
+                libro</button>
+              <input type="file" id="inputImportarLibro" accept=".json,application/json" hidden>
               <!-- Mismo formato que genera "Descargar respaldo": archivo .json -->
               <input type="file" id="inputRespaldo" accept=".json,application/json" hidden>
             </div>
@@ -277,7 +282,6 @@
   </div>
 
   <script type="module" src="js/app.js"></script>
-  <script type="module" src="js/google-analytics.js"></script>
 </body>
 
 </html>

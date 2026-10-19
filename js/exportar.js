@@ -5,6 +5,7 @@ import {
   obtenerSubcolecciones
 } from "./db.js";
 import { renderizarHTML } from "./formato.js";
+import { armarArchivoLibro, nombreArchivoLibro } from "./respaldo-libro.js";
 
 // Convierte Timestamps de Firestore (y cualquier estructura anidada)
 // a algo que JSON.stringify pueda escribir bien.
@@ -45,6 +46,17 @@ export async function exportarBiblioteca(uidObjetivo) {
   const libros = await obtenerLibros(uidObjetivo || undefined);
   const respaldo = await armarRespaldo(libros);
   descargar(`respaldo-bitacora-${fechaHoy()}.json`, JSON.stringify(respaldo, null, 2), "application/json");
+}
+
+// Respaldo .json de UN solo libro (con capítulos, personajes, citas y conceptos).
+// No lleva ids ni el uid del dueño, así que se puede compartir: al importarlo se
+// crea siempre un libro nuevo (ver importarLibro en importar.js).
+export async function exportarLibro(libroId) {
+  const libro = await obtenerLibro(libroId);
+  if (!libro) throw new Error("No se encontró el libro.");
+  const sub = await obtenerSubcolecciones(libroId);
+  const archivo = armarArchivoLibro(limpiar({ ...libro, ...sub }));
+  descargar(nombreArchivoLibro(libro.titulo), JSON.stringify(archivo, null, 2), "application/json");
 }
 
 // Respaldo de TODOS los usuarios (solo admin).

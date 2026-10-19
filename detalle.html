@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <script type="module" src="js/theme.js"></script>
   <link rel="manifest" href="manifest.json">
-  <!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
+  <!-- Favicon: usa una de las imágenes de /icons/ -->
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <meta name="theme-color" content="#12151a">
   <!-- Compatibilidad con Apple -->
@@ -74,6 +74,9 @@
         <a id="btnLeer" href="lector.html" class="boton-fantasma" style="text-decoration:none" hidden>Leer en la app</a>
         <button id="btnEditarLibro" class="boton-fantasma">Editar libro</button>
         <button id="btnExportarGuia" class="boton-fantasma">Exportar guía</button>
+        <button id="btnExportarLibro" class="boton-fantasma"
+          title="Descarga un .json con este libro y todo su contenido; sirve de respaldo o para compartirlo">Exportar
+          libro (.json)</button>
         <button id="btnPapelera" class="boton-fantasma boton-borrar">Mover a la papelera</button>
       </div>
 
@@ -220,7 +223,6 @@
   </div>
 
   <script type="module" src="js/detalle.js"></script>
-  <script type="module" src="js/google-analytics.js"></script>
 </body>
 
 </html>

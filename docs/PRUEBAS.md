@@ -61,6 +61,16 @@ Usa una cuenta de prueba **o** haz antes un respaldo (`Descargar respaldo`).
 - [ ] «Descargar respaldo» → «Cargar respaldo» con el mismo archivo: mismos libros y contenido (incluidos los de la papelera, que siguen en la papelera).
 - [ ] Un respaldo tomado **antes** de esta versión (sin `eliminadoEn`) se restaura sin errores.
 
+## 2a. Respaldo de un solo libro
+
+- `node tests/respaldo-libro.test.mjs` pasa.
+- Detalle de un libro → **Exportar libro (.json)**: baja `libro-<título>-<fecha>.json`; el archivo no contiene ids ni tu uid.
+- Biblioteca → **Importar libro** → elige ese archivo: aparece la confirmación con título y conteos; al aceptar se añade un libro nuevo y el original queda intacto.
+- Con otra cuenta, importa el mismo archivo: queda como libro propio de esa cuenta.
+- **Cargar respaldo** con un archivo de un libro se rechaza (no cambia nada); **Importar libro** con un respaldo general (varios libros) se rechaza.
+- Un `.json` manipulado (enlaces `javascript:`, estado inválido, `propietarioUid` ajeno) se importa saneado y a tu nombre.
+- Admin viendo otra biblioteca: sin «Importar libro»; sí puede exportar un libro ajeno.
+
 ## 2b. Lector integrado (`lector.html`)
 
 - `node tests/sincronia.test.mjs` pasa.

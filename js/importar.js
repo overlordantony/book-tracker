@@ -2,11 +2,13 @@ import {
   collection,
   doc,
   getDocs,
+  setDoc,
   writeBatch,
   Timestamp
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { db, auth } from "./firebase-init.js";
-import { obtenerLibros } from "./db.js";
+import { obtenerLibros, restaurarDePapelera, eliminarLibroDefinitivo } from "./db.js";
+import { leerArchivoLibro } from "./respaldo-libro.js";
 
 // Restaurar un respaldo .json generado por "Descargar respaldo" (exportar.js).
 //
@@ -59,6 +61,10 @@ export async function prepararRespaldo(archivo) {
   }
   if (typeof datos.version === "number" && datos.version > 1) {
     throw new Error("El respaldo es de una versión más nueva de la app y no se puede restaurar aquí.");
+  }
+  // «Cargar respaldo» REEMPLAZA la biblioteca: un archivo de un solo libro la dejaría con ese único libro.
+  if (datos.tipo === "libro") {
+    throw new Error("Este archivo es el respaldo de un solo libro. Impórtalo con «Importar libro»: así se añade sin tocar el resto de tu biblioteca.");
   }
 
   const uid = auth.currentUser?.uid;
@@ -193,4 +199,80 @@ export async function restaurarRespaldo(preparado, onProgreso) {
   await enLotes(sobrantes, (lote, ruta) => lote.delete(doc(db, ...ruta)));
 
   return { libros: preparado.libros.length, items: preparado.resumen.totalItems, eliminados: sobrantes.length };
+}
+
+// ---------- Importar UN libro (respaldo de un solo libro) ----------
+//
+// A diferencia de «Cargar respaldo», esto solo AÑADE: nunca modifica ni borra nada de
+// lo que ya existe. Siempre crea un libro nuevo con ids nuevos y a nombre de quien
+// importa, así que sirve igual para restaurar un libro propio (queda una copia) que
+// para recibir uno de otra persona.
+
+// Lee y valida el archivo. Devuelve { libro, items, resumen } listo para confirmar.
+export async function prepararLibro(archivo) {
+  if (!archivo) throw new Error("No se seleccionó ningún archivo.");
+  if (archivo.size > MAX_BYTES) throw new Error("El archivo es demasiado grande para ser el respaldo de un libro.");
+  let datos;
+  try {
+    datos = JSON.parse(await archivo.text());
+  } catch {
+    throw new Error("El archivo no es un JSON válido. Usa un archivo generado con «Exportar libro».");
+  }
+  return leerArchivoLibro(datos);
+}
+
+// onProgreso(hechas, total) se llama tras cada paso. Devuelve { id, items }.
+export async function importarLibro(preparado, onProgreso) {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error("Tu sesión no está activa. Vuelve a iniciar sesión.");
+
+  const { libro, items } = preparado;
+  const referencia = doc(collection(db, "libros"));
+  const id = referencia.id;
+  const escrituras = [];
+  for (const nombre of SUBCOLECCIONES) {
+    for (const it of items[nombre]) {
+      const { creadoEn, ...resto } = it;
+      escrituras.push({
+        ref: doc(collection(db, "libros", id, nombre)),
+        datos: { ...resto, creadoEn: aTimestamp(creadoEn) }
+      });
+    }
+  }
+  const total = escrituras.length + 2;
+  let hechas = 0;
+  onProgreso?.(hechas, total);
+
+  // 1) El libro se crea OCULTO (en la papelera) y en su propia escritura: las reglas
+  //    comprueban el dueño de cada ítem leyendo el libro padre, que debe existir antes.
+  //    Así, si algo falla a medias, nunca queda un libro incompleto a la vista.
+  const { creadoEn, actualizadoEn, ...campos } = libro;
+  await setDoc(referencia, {
+    ...campos,
+    propietarioUid: uid,
+    creadoEn: aTimestamp(creadoEn),
+    actualizadoEn: aTimestamp(actualizadoEn),
+    eliminadoEn: Timestamp.now()
+  });
+  onProgreso?.(++hechas, total);
+
+  try {
+    // 2) Los ítems, por lotes.
+    for (let i = 0; i < escrituras.length; i += MAX_OPS_POR_LOTE) {
+      const lote = writeBatch(db);
+      const trozo = escrituras.slice(i, i + MAX_OPS_POR_LOTE);
+      trozo.forEach(e => lote.set(e.ref, e.datos));
+      await lote.commit();
+      hechas += trozo.length;
+      onProgreso?.(hechas, total);
+    }
+    // 3) Se hace visible (no cambia "actualizadoEn", así que no altera las estadísticas).
+    await restaurarDePapelera(id);
+    onProgreso?.(total, total);
+  } catch (err) {
+    // Limpieza: el libro sigue en la papelera, así que se puede eliminar por completo.
+    try { await eliminarLibroDefinitivo(id); } catch { /* si tampoco se puede, queda en la papelera */ }
+    throw err;
+  }
+  return { id, items: escrituras.length };
 }

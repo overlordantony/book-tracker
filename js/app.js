@@ -11,7 +11,7 @@ import { iniciarToggleTema } from "./theme.js";
 import { obtenerPerfil } from "./roles.js";
 import { renderEstadisticas } from "./estadisticas.js";
 import { exportarBiblioteca } from "./exportar.js";
-import { prepararRespaldo, restaurarRespaldo } from "./importar.js";
+import { prepararRespaldo, restaurarRespaldo, prepararLibro, importarLibro } from "./importar.js";
 import { confirmarAccion, negrita } from "./modal.js";
 import { renderizarHTML, aTextoPlano, montarEditor } from "./formato.js";
 
@@ -77,6 +77,7 @@ vigilarSesion(async (usuario) => {
   if (uidObjetivo && uidObjetivo !== usuario.uid) {
     document.getElementById("pestañaAgregar").style.display = "none";
     document.getElementById("btnCargarRespaldo").hidden = true; // restaurar solo sobre la propia biblioteca
+    document.getElementById("btnImportarLibro").hidden = true;
     document.getElementById("pestañaPapelera").style.display = "none"; // la papelera es solo del dueño
     const aviso = document.getElementById("avisoVistaAjena");
     aviso.hidden = false;
@@ -610,6 +611,51 @@ btnConfirmarRestaurar.addEventListener("click", async () => {
     btnConfirmarRestaurar.textContent = "Reintentar";
     await cargarLibros(); // refleja lo que haya quedado escrito
   }
+});
+
+// ---------- Importar un libro (respaldo de un solo libro) ----------
+// Solo AÑADE un libro nuevo a tu biblioteca; no modifica ni borra nada de lo que ya tienes.
+const btnImportarLibro = document.getElementById("btnImportarLibro");
+const inputImportarLibro = document.getElementById("inputImportarLibro");
+
+btnImportarLibro.addEventListener("click", () => inputImportarLibro.click());
+
+inputImportarLibro.addEventListener("change", async () => {
+  const archivo = inputImportarLibro.files[0];
+  inputImportarLibro.value = ""; // así se puede volver a elegir el mismo archivo
+  if (!archivo) return;
+
+  let preparado;
+  try {
+    preparado = await prepararLibro(archivo);
+  } catch (err) {
+    alert("No se pudo leer el archivo: " + err.message);
+    return;
+  }
+
+  const r = preparado.resumen;
+  const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+  const fecha = r.exportadoEn ? new Date(r.exportadoEn) : null;
+  const ok = await confirmarAccion({
+    titulo: "Importar libro",
+    mensaje: [
+      "Se añadirá a tu biblioteca ", negrita(r.titulo), r.autor ? ` de ${r.autor}` : "",
+      ` con ${plural(r.capitulos, "capítulo", "capítulos")}, ${plural(r.personajes, "personaje", "personajes")}, `,
+      `${plural(r.citas, "cita", "citas")} y ${plural(r.conceptos, "concepto", "conceptos")}`,
+      fecha && !isNaN(fecha) ? ` (exportado el ${fecha.toLocaleString("es")}).` : "."
+    ],
+    aviso: "Siempre se crea un libro nuevo: no se modifica ni se borra nada de lo que ya tienes. Si ya lo tenías, quedará una copia." +
+      (r.descartados ? ` Se omitirán ${plural(r.descartados, "elemento no válido", "elementos no válidos")} del archivo.` : ""),
+    textoConfirmar: "Importar libro",
+    peligro: false,
+    onConfirmar: (progreso) => importarLibro(preparado, progreso)
+  });
+  if (!ok) return;
+
+  citasCache = null;
+  await cargarLibros();
+  document.querySelector('.pestañas .pestaña[data-vista="biblioteca"]').click();
+  alert(`Libro importado: «${r.titulo}».`);
 });
 
 // ---------- Citas de todos los libros ----------
