@@ -10,7 +10,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
     rel="stylesheet">
+  <script src="js/tema-init.js"></script>
+  <link rel="stylesheet" href="css/temas.css">
   <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/tema.js"></script>
   <script type="module" src="js/theme.js"></script>
   <link rel="manifest" href="manifest.json">
   <!-- Favicon: usa una de las imágenes de /icons/ -->
@@ -35,6 +38,9 @@
     <h1>Administración</h1>
     <div class="acciones">
       <button id="btnTema" class="boton-tema"></button>
+      <div class="selector-paleta">
+        <select id="sel-paleta"></select> <!-- se rellena desde js/paletas.js -->
+      </div>
       <a href="app.html" class="boton-fantasma" style="text-decoration:none; display:inline-block;">Volver</a>
       <button id="btnSalir" class="boton-fantasma">Salir</button>
     </div>

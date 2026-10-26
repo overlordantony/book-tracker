@@ -8,7 +8,7 @@
 #prog-fill{height:100%;width:0;background:var(--ac);border-radius:3px}
 #tabs{display:flex;gap:.2rem}
 #tabs button{flex:1;padding:.4rem 0;font-size:.8rem;min-height:40px}
-#tabs .on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#tabs .on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 #sidebar section{display:flex;flex-direction:column;gap:.4rem}
 summary{cursor:pointer;font-weight:600;padding:.5rem 0}
 .cap{justify-content:flex-start;text-align:left;width:100%;border:0;background:none;font-size:.9rem}

@@ -1,8 +1,6 @@
 /* main.css — variables, temas y elementos base */
 :root{--fuente:Georgia,serif;--tam:19px;--lh:1.7;--ancho:44rem;--sw:300px}
-body{--bg:#fbfaf7;--fg:#222;--pan:#efede6;--bd:#d9d5c8;--ac:#2a6df4}
-body[data-tema=oscuro]{--bg:#16181c;--fg:#d8dadf;--pan:#20232a;--bd:#363a44;--ac:#7aa2ff}
-body[data-tema=sepia]{--bg:#f4ecd8;--fg:#4a3b28;--pan:#eadfc4;--bd:#d3c4a0;--ac:#a0602a}
+body{--bg:var(--t-bg);--fg:var(--t-texto);--pan:var(--t-superficie-2);--bd:var(--t-linea);--ac:var(--t-accent);--on-ac:var(--t-on-accent)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}

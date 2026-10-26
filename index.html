@@ -10,10 +10,13 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
     rel="stylesheet">
+  <script src="js/tema-init.js"></script>
+  <link rel="stylesheet" href="css/temas.css">
   <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/tema.js"></script>
   <script type="module" src="js/theme.js"></script>
   <link rel="manifest" href="manifest.json">
-  <!-- Favicon: usa una de las imágenes de /icons/ (cámbiala aquí si prefieres otra) -->
+  <!-- Favicon: usa una de las imágenes de /icons/ -->
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <meta name="theme-color" content="#12151a">
   <!-- Compatibilidad con Apple -->
@@ -29,6 +32,9 @@
 
 <body class="pagina-login">
   <button id="btnTema" class="boton-tema"></button>
+  <div class="selector-paleta">
+        <select id="sel-paleta"></select> <!-- se rellena desde js/paletas.js -->
+      </div>
 
   <main class="tarjeta-login">
     <h1>Bitácora de lectura</h1>

@@ -1,0 +1,320 @@
+/* temas.css — GENERADO por tools/generar-temas.py. No editar a mano: edita PALETAS y vuelve a generar.
+   Estructura:  :root[data-palette="<id>"][data-theme="dark|light|sepia"]  →  tokens --t-*
+   Los tokens --t-* se mapean a los nombres que ya usa la bitácora (--bg, --texto…) y el lector (--fg, --pan…)
+   en styles.css y lector/main.css. */
+
+/* Velvet Plum · Oscuro */
+:root[data-palette="velvet"][data-theme="dark"]{
+  color-scheme:dark;
+  --t-bg:#150E13;
+  --t-superficie:#1E171D;
+  --t-superficie-2:#292127;
+  --t-texto:#F1ECE4;
+  --t-muted:#A899A5;
+  --t-linea:#3A3338;
+  --t-accent:#A67BBE;
+  --t-accent-hover:#B98DD2;
+  --t-accent-suave:rgba(166,123,190,0.16);
+  --t-on-accent:#150E13;
+  --t-verde:#3BB582;
+  --t-verde-suave:rgba(59,181,130,0.16);
+  --t-vino:#E2574C;
+  --t-vino-suave:rgba(226,87,76,0.16);
+  --t-oro:#E8B339;
+  --t-sombra:0 8px 24px rgba(0,0,0,.38);
+}
+
+/* Velvet Plum · Claro */
+:root[data-palette="velvet"][data-theme="light"]{
+  color-scheme:light;
+  --t-bg:#F6F1F9;
+  --t-superficie:#FEFDFF;
+  --t-superficie-2:#EDE7F1;
+  --t-texto:#221420;
+  --t-muted:#6F6476;
+  --t-linea:#D8D1DC;
+  --t-accent:#633A78;
+  --t-accent-hover:#522966;
+  --t-accent-suave:rgba(99,58,120,0.1);
+  --t-on-accent:#FFFFFF;
+  --t-verde:#1F8F63;
+  --t-verde-suave:rgba(31,143,99,0.12);
+  --t-vino:#C43D33;
+  --t-vino-suave:rgba(196,61,51,0.12);
+  --t-oro:#B5791A;
+  --t-sombra:0 8px 24px rgba(45,26,42,0.14);
+}
+
+/* Velvet Plum · Sepia */
+:root[data-palette="velvet"][data-theme="sepia"]{
+  color-scheme:light;
+  --t-bg:#FFE7DE;
+  --t-superficie:#FFF0EA;
+  --t-superficie-2:#FCDBCF;
+  --t-texto:#43291D;
+  --t-muted:#795D53;
+  --t-linea:#E8C0B2;
+  --t-accent:#613D74;
+  --t-accent-hover:#502D63;
+  --t-accent-suave:rgba(97,61,116,0.14);
+  --t-on-accent:#FFF4F0;
+  --t-verde:#3F7A4F;
+  --t-verde-suave:rgba(63,122,79,0.12);
+  --t-vino:#A8402F;
+  --t-vino-suave:rgba(168,64,47,0.12);
+  --t-oro:#8F6410;
+  --t-sombra:0 8px 24px rgba(64,39,18,0.2);
+}
+
+/* Viridian Elegance · Oscuro */
+:root,
+:root[data-palette="viridian"][data-theme="dark"]{
+  color-scheme:dark;
+  --t-bg:#0A1310;
+  --t-superficie:#131C19;
+  --t-superficie-2:#1D2623;
+  --t-texto:#F0EDE4;
+  --t-muted:#90A49C;
+  --t-linea:#2F3835;
+  --t-accent:#56997F;
+  --t-accent-hover:#68AC91;
+  --t-accent-suave:rgba(86,153,127,0.16);
+  --t-on-accent:#0A1310;
+  --t-verde:#3BB582;
+  --t-verde-suave:rgba(59,181,130,0.16);
+  --t-vino:#E2574C;
+  --t-vino-suave:rgba(226,87,76,0.16);
+  --t-oro:#E8B339;
+  --t-sombra:0 8px 24px rgba(0,0,0,.38);
+}
+
+/* Viridian Elegance · Claro */
+:root[data-palette="viridian"][data-theme="light"]{
+  color-scheme:light;
+  --t-bg:#ECF6F2;
+  --t-superficie:#FBFEFD;
+  --t-superficie-2:#E1EDE7;
+  --t-texto:#091E18;
+  --t-muted:#576D64;
+  --t-linea:#CAD8D2;
+  --t-accent:#2A6F57;
+  --t-accent-hover:#145E47;
+  --t-accent-suave:rgba(42,111,87,0.1);
+  --t-on-accent:#FFFFFF;
+  --t-verde:#1F8F63;
+  --t-verde-suave:rgba(31,143,99,0.12);
+  --t-vino:#C43D33;
+  --t-vino-suave:rgba(196,61,51,0.12);
+  --t-oro:#B5791A;
+  --t-sombra:0 8px 24px rgba(9,40,31,0.14);
+}
+
+/* Viridian Elegance · Sepia */
+:root[data-palette="viridian"][data-theme="sepia"]{
+  color-scheme:light;
+  --t-bg:#F2EED4;
+  --t-superficie:#F8F5DE;
+  --t-superficie-2:#E8E4C6;
+  --t-texto:#3D2D14;
+  --t-muted:#68644A;
+  --t-linea:#D1CCA7;
+  --t-accent:#326E58;
+  --t-accent-hover:#205D48;
+  --t-accent-suave:rgba(50,110,88,0.14);
+  --t-on-accent:#F9F7E8;
+  --t-verde:#3F7A4F;
+  --t-verde-suave:rgba(63,122,79,0.12);
+  --t-vino:#A8402F;
+  --t-vino-suave:rgba(168,64,47,0.12);
+  --t-oro:#8F6410;
+  --t-sombra:0 8px 24px rgba(64,39,18,0.2);
+}
+
+/* Midnight Sapphire · Oscuro */
+:root[data-palette="midnight"][data-theme="dark"]{
+  color-scheme:dark;
+  --t-bg:#0C1116;
+  --t-superficie:#141A20;
+  --t-superficie-2:#1F252B;
+  --t-texto:#F0EDE4;
+  --t-muted:#93A0AE;
+  --t-linea:#30363C;
+  --t-accent:#6791C1;
+  --t-accent-hover:#79A4D4;
+  --t-accent-suave:rgba(103,145,193,0.16);
+  --t-on-accent:#0C1116;
+  --t-verde:#3BB582;
+  --t-verde-suave:rgba(59,181,130,0.16);
+  --t-vino:#E2574C;
+  --t-vino-suave:rgba(226,87,76,0.16);
+  --t-oro:#E8B339;
+  --t-sombra:0 8px 24px rgba(0,0,0,.38);
+}
+
+/* Midnight Sapphire · Claro */
+:root[data-palette="midnight"][data-theme="light"]{
+  color-scheme:light;
+  --t-bg:#EEF4FC;
+  --t-superficie:#FCFEFF;
+  --t-superficie-2:#E3EAF3;
+  --t-texto:#0E1B27;
+  --t-muted:#5B6979;
+  --t-linea:#CDD5DF;
+  --t-accent:#224A75;
+  --t-accent-hover:#113A63;
+  --t-accent-suave:rgba(34,74,117,0.1);
+  --t-on-accent:#FFFFFF;
+  --t-verde:#1F8F63;
+  --t-verde-suave:rgba(31,143,99,0.12);
+  --t-vino:#C43D33;
+  --t-vino-suave:rgba(196,61,51,0.12);
+  --t-oro:#B5791A;
+  --t-sombra:0 8px 24px rgba(17,35,52,0.14);
+}
+
+/* Midnight Sapphire · Sepia */
+:root[data-palette="midnight"][data-theme="sepia"]{
+  color-scheme:light;
+  --t-bg:#E7F1D8;
+  --t-superficie:#EFF7E2;
+  --t-superficie-2:#DDE8CB;
+  --t-texto:#442821;
+  --t-muted:#5E674E;
+  --t-linea:#C3D1AD;
+  --t-accent:#274A71;
+  --t-accent-hover:#173A5F;
+  --t-accent-suave:rgba(39,74,113,0.14);
+  --t-on-accent:#F4F9EB;
+  --t-verde:#3F7A4F;
+  --t-verde-suave:rgba(63,122,79,0.12);
+  --t-vino:#A8402F;
+  --t-vino-suave:rgba(168,64,47,0.12);
+  --t-oro:#8F6410;
+  --t-sombra:0 8px 24px rgba(64,39,18,0.2);
+}
+
+/* Burgundy Noir · Oscuro */
+:root[data-palette="burgundy"][data-theme="dark"]{
+  color-scheme:dark;
+  --t-bg:#160E0E;
+  --t-superficie:#201717;
+  --t-superficie-2:#2A2121;
+  --t-texto:#F0EDE4;
+  --t-muted:#AE9999;
+  --t-linea:#3C3333;
+  --t-accent:#C07976;
+  --t-accent-hover:#D48B88;
+  --t-accent-suave:rgba(192,121,118,0.16);
+  --t-on-accent:#160E0E;
+  --t-verde:#3BB582;
+  --t-verde-suave:rgba(59,181,130,0.16);
+  --t-vino:#E2574C;
+  --t-vino-suave:rgba(226,87,76,0.16);
+  --t-oro:#E8B339;
+  --t-sombra:0 8px 24px rgba(0,0,0,.38);
+}
+
+/* Burgundy Noir · Claro */
+:root[data-palette="burgundy"][data-theme="light"]{
+  color-scheme:light;
+  --t-bg:#FCF0F0;
+  --t-superficie:#FFFDFD;
+  --t-superficie-2:#F3E6E5;
+  --t-texto:#261414;
+  --t-muted:#7A6261;
+  --t-linea:#DFD0CF;
+  --t-accent:#632626;
+  --t-accent-hover:#511517;
+  --t-accent-suave:rgba(99,38,38,0.1);
+  --t-on-accent:#FFFFFF;
+  --t-verde:#1F8F63;
+  --t-verde-suave:rgba(31,143,99,0.12);
+  --t-vino:#C43D33;
+  --t-vino-suave:rgba(196,61,51,0.12);
+  --t-oro:#B5791A;
+  --t-sombra:0 8px 24px rgba(50,25,27,0.14);
+}
+
+/* Burgundy Noir · Sepia */
+:root[data-palette="burgundy"][data-theme="sepia"]{
+  color-scheme:light;
+  --t-bg:#FFE8D6;
+  --t-superficie:#FFF0E5;
+  --t-superficie-2:#F8DDC9;
+  --t-texto:#422A1A;
+  --t-muted:#755E4C;
+  --t-linea:#E4C4AA;
+  --t-accent:#602928;
+  --t-accent-hover:#4E191A;
+  --t-accent-suave:rgba(96,41,40,0.14);
+  --t-on-accent:#FFF5ED;
+  --t-verde:#3F7A4F;
+  --t-verde-suave:rgba(63,122,79,0.12);
+  --t-vino:#A8402F;
+  --t-vino-suave:rgba(168,64,47,0.12);
+  --t-oro:#8F6410;
+  --t-sombra:0 8px 24px rgba(64,39,18,0.2);
+}
+
+/* Emerald Bloom · Oscuro */
+:root[data-palette="emerald"][data-theme="dark"]{
+  color-scheme:dark;
+  --t-bg:#151006;
+  --t-superficie:#1E190F;
+  --t-superficie-2:#292319;
+  --t-texto:#F1ECE4;
+  --t-muted:#A69E8D;
+  --t-linea:#3A352B;
+  --t-accent:#599881;
+  --t-accent-hover:#6BAB93;
+  --t-accent-suave:rgba(89,152,129,0.16);
+  --t-on-accent:#151006;
+  --t-verde:#3BB582;
+  --t-verde-suave:rgba(59,181,130,0.16);
+  --t-vino:#E2574C;
+  --t-vino-suave:rgba(226,87,76,0.16);
+  --t-oro:#E8B339;
+  --t-sombra:0 8px 24px rgba(0,0,0,.38);
+}
+
+/* Emerald Bloom · Claro */
+:root[data-palette="emerald"][data-theme="light"]{
+  color-scheme:light;
+  --t-bg:#ECF6F2;
+  --t-superficie:#FBFEFD;
+  --t-superficie-2:#E1EDE8;
+  --t-texto:#201808;
+  --t-muted:#576D64;
+  --t-linea:#CAD8D2;
+  --t-accent:#145844;
+  --t-accent-hover:#004734;
+  --t-accent-suave:rgba(20,88,68,0.1);
+  --t-on-accent:#FFFFFF;
+  --t-verde:#1F8F63;
+  --t-verde-suave:rgba(31,143,99,0.12);
+  --t-vino:#C43D33;
+  --t-vino-suave:rgba(196,61,51,0.12);
+  --t-oro:#B5791A;
+  --t-sombra:0 8px 24px rgba(42,32,9,0.14);
+}
+
+/* Emerald Bloom · Sepia */
+:root[data-palette="emerald"][data-theme="sepia"]{
+  color-scheme:light;
+  --t-bg:#F1EED4;
+  --t-superficie:#F7F5DE;
+  --t-superficie-2:#E8E4C6;
+  --t-texto:#3D2D14;
+  --t-muted:#68644A;
+  --t-linea:#D1CCA7;
+  --t-accent:#1E5745;
+  --t-accent-hover:#084735;
+  --t-accent-suave:rgba(30,87,69,0.14);
+  --t-on-accent:#F9F8E8;
+  --t-verde:#3F7A4F;
+  --t-verde-suave:rgba(63,122,79,0.12);
+  --t-vino:#A8402F;
+  --t-vino-suave:rgba(168,64,47,0.12);
+  --t-oro:#8F6410;
+  --t-sombra:0 8px 24px rgba(64,39,18,0.2);
+}

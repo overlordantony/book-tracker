@@ -1,47 +1,20 @@
-/* === Tokens ===
-   Paleta moderna con modo oscuro por defecto y modo claro opcional.
-   Acento índigo/azul vivo en vez del típico terracota genérico. */
 :root{
   --radio: 10px;
   --radio-sm: 6px;
-  --sombra: 0 8px 24px rgba(0,0,0,.28);
+  /* --sombra: ahora viene de la paleta */
   --alto-barra: 64px;   /* alto del header fijo */
   --alto-pie: 52px;     /* alto del footer fijo (en móvil cambia, ver media query) */
   --ancho-contenido: 820px;
 }
 
-:root[data-theme="dark"]{
-  --bg: #12151a;
-  --superficie: #1b1f27;
-  --superficie-2: #232834;
-  --texto: #e7eaf0;
-  --muted: #8992a3;
-  --linea: #2b303c;
-  --accent: #5b8def;
-  --accent-suave: rgba(91,141,239,.16);
-  --accent-hover: #78a3f3;
-  --verde: #3bb582;
-  --verde-suave: rgba(59,181,130,.16);
-  --vino: #e2574c;
-  --vino-suave: rgba(226,87,76,.16);
-  --oro: #e8b339;
-}
-
-:root[data-theme="light"]{
-  --bg: #f4f6fa;
-  --superficie: #ffffff;
-  --superficie-2: #edf0f6;
-  --texto: #161a20;
-  --muted: #677086;
-  --linea: #dde1e9;
-  --accent: #3f6fd1;
-  --accent-suave: rgba(63,111,209,.10);
-  --accent-hover: #2f5bb8;
-  --verde: #1f8f63;
-  --verde-suave: rgba(31,143,99,.10);
-  --vino: #c43d33;
-  --vino-suave: rgba(196,61,51,.10);
-  --oro: #b5791a;
+:root{ /* tokens de la bitácora ← paleta activa (ver css/temas.css) */
+  --bg:var(--t-bg); --superficie:var(--t-superficie); --superficie-2:var(--t-superficie-2);
+  --texto:var(--t-texto); --muted:var(--t-muted); --linea:var(--t-linea);
+  --accent:var(--t-accent); --accent-suave:var(--t-accent-suave); --accent-hover:var(--t-accent-hover);
+  --on-accent:var(--t-on-accent);
+  --verde:var(--t-verde); --verde-suave:var(--t-verde-suave);
+  --vino:var(--t-vino); --vino-suave:var(--t-vino-suave); --oro:var(--t-oro);
+  --sombra:var(--t-sombra);
 }
 
 *{ box-sizing: border-box; }
@@ -144,7 +117,7 @@ button[type="submit"], .boton-principal{
   font-weight: 600;
   padding: .7rem;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border: none;
   border-radius: var(--radio-sm);
   cursor: pointer;
@@ -215,10 +188,10 @@ button[type="submit"]:hover, .boton-principal:hover{ background: var(--accent-ho
   height: 40px;
   border-radius: 10px;
   overflow: hidden;
-  background: #12151a;
+  background: var(--bg);
   box-shadow: 0 0 0 1px var(--linea), 0 2px 8px rgba(0,0,0,.35);
 }
-.logo{ display: block; width: 100%; height: 100%; transform: scale(1.85); }
+.logo{ display: block; width: 100%; height: 100%; transform: scale(0.85); }
 
 .boton-fantasma{
   font-family: inherit;
@@ -253,7 +226,7 @@ button[type="submit"]:hover, .boton-principal:hover{ background: var(--accent-ho
   border-radius: 999px;
 }
 
-.pestaña.activa{ color: #fff; background: var(--accent); }
+.pestaña.activa{ color: var(--on-accent); background: var(--accent); }
 
 .vista{ padding-top: 1.6rem; }
 
@@ -713,7 +686,7 @@ input[type="search"]{ -webkit-appearance: none; appearance: none; }
   background: none; border: none; color: var(--muted);
   padding: .3rem .8rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
 }
-.segmento.activo{ background: var(--accent); color: #fff; }
+.segmento.activo{ background: var(--accent); color: var(--on-accent); }
 .segmento:not(.activo):hover{ color: var(--texto); }
 
 .sin-datos{
@@ -806,7 +779,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible{
 
 .contador-pestaña{
   display: inline-block; min-width: 1.4em; padding: 0 .4em; margin-left: .2em;
-  border-radius: 999px; background: var(--accent); color: #fff;
+  border-radius: 999px; background: var(--accent); color: var(--on-accent);
   font-size: .7rem; font-weight: 700; line-height: 1.5; text-align: center;
 }
 .filtros-activos{ display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
@@ -899,7 +872,7 @@ a.fila-libro{ color: inherit; text-decoration: none; }
 .editor-boton:hover:not(:disabled){ border-color: var(--accent); }
 .editor-boton:disabled{ opacity: .5; cursor: default; }
 .editor-boton-vista{ margin-left: auto; }
-.editor-boton[aria-pressed="true"]{ background: var(--accent); border-color: var(--accent); color: #fff; }
+.editor-boton[aria-pressed="true"]{ background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .editor-vista{
   min-height: 4rem; padding: .6rem .7rem; font-size: .9rem;
   background: var(--superficie-2); border: 1px dashed var(--linea); border-radius: var(--radio-sm);

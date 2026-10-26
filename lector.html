@@ -18,6 +18,10 @@
   <link rel="stylesheet" href="css/lector/sidebar.css">
   <link rel="stylesheet" href="css/lector/reader.css">
   <link rel="stylesheet" href="css/lector/nube.css">
+    <script src="js/tema-init.js"></script>
+  <link rel="stylesheet" href="css/temas.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/tema.js"></script>
 </head>
 
 <body data-tema="claro">
@@ -85,6 +89,11 @@
         <option value="oscuro">Oscuro</option>
         <option value="sepia">Sepia</option>
       </select></label>
+      <label>
+        <div class="selector-paleta">
+        <select id="sel-paleta"></select> <!-- se rellena desde js/paletas.js -->
+      </div>
+      </label>
     <div class="fila"><button id="exp">Exportar datos</button><label class="btn" for="imp">Importar</label><input
         id="imp" type="file" accept=".json" hidden></div>
     <small>Tu posición y tus anotaciones se guardan en tu cuenta. Exportar/Importar genera o restaura una copia en un
