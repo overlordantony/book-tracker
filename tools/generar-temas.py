@@ -13,7 +13,27 @@ PALETAS = [
     dict(id="viridian", nombre="Viridian Elegance", seeds=["#EAF2EF", "#6DA68F", "#2A6F57", "#13382B", "#D4AF37"], acento=2),
     dict(id="midnight", nombre="Midnight Sapphire", seeds=["#E6ECF2", "#6382A6", "#224A75", "#0E243F", "#E5C158"], acento=2),
     dict(id="burgundy", nombre="Burgundy Noir",     seeds=["#F5ECEC", "#A36B6B", "#632626", "#361111", "#D4AF37"], acento=2),
-    dict(id="emerald", nombre="Emerald Bloom", seeds=["#F2EBDD", "#78947F", "#185844", "#102F27", "#B08A4F"], acento=2)
+    dict(id="emerald", nombre="Emerald Bloom", seeds=["#F2EBDD", "#78947F", "#185844", "#102F27", "#B08A4F"], acento=2),
+    dict(id="crimson",    nombre="Crimson Kiss",     seeds=["#FBEAEC", "#E0566B", "#A3112F", "#3D0813", "#E8C49A"], acento=2),
+    dict(id="rosa",       nombre="Midnight Rose",    seeds=["#F7EAEE", "#B5667E", "#7A2845", "#3E0F23", "#C9A66B"], acento=2),
+    dict(id="mulberry",   nombre="Mulberry Wine",    seeds=["#F6E9F1", "#B2649A", "#7A2A68", "#34102E", "#D6B35F"], acento=2),
+    dict(id="fucsia",     nombre="Fuchsia Dusk",     seeds=["#FDEBF5", "#E066B0", "#B01C7C", "#470A36", "#E3B65A"], acento=2),
+    dict(id="amatista",   nombre="Amethyst Dusk",    seeds=["#EEEBFA", "#8C80C9", "#5B3FA0", "#1D1650", "#D4B26A"], acento=2),
+    dict(id="lavanda",    nombre="Lavender Honey",   seeds=["#F4F0FA", "#B39DDB", "#7E57C2", "#2B1A52", "#F2C14E"], acento=2),
+    dict(id="indigo",     nombre="Indigo Ink",       seeds=["#E9EBF7", "#6C78C4", "#2E3A9A", "#111646", "#D9B766"], acento=2),
+    dict(id="peacock",    nombre="Peacock Tide",     seeds=["#E3F4F6", "#3FA3B5", "#0F6A8A", "#052E40", "#E3B341"], acento=2),
+    dict(id="teal",       nombre="Teal Lagoon",      seeds=["#E6F3F2", "#5FA8A5", "#1B6B6E", "#0A2F33", "#D9A441"], acento=2),
+    dict(id="cobalto",    nombre="Cobalt Glacier",   seeds=["#EAF4FB", "#6DB3E3", "#1C7AC4", "#08335A", "#F0B84B"], acento=2),
+    dict(id="pizarra",    nombre="Slate Storm",      seeds=["#ECF0F3", "#7C93A6", "#3C5568", "#14212B", "#D9A85B"], acento=2),
+    dict(id="perla",      nombre="Blackened Pearl",  seeds=["#F4F1EC", "#A8A3B0", "#55506A", "#1E1B2B", "#D8C9A8"], acento=2),
+    dict(id="carbon",     nombre="Charcoal & Lace",  seeds=["#F2F0EE", "#9A9694", "#4A4745", "#1C1B1A", "#D9B7A0"], acento=2),
+    dict(id="cuarzo",     nombre="Smoky Quartz",     seeds=["#F3EEEC", "#A89290", "#6B5352", "#2A1E1E", "#D1A85F"], acento=2),
+    dict(id="musgo",      nombre="Moss Olive",       seeds=["#F0F2E4", "#8FA05A", "#55691F", "#222C0C", "#C9A34E"], acento=2),
+    dict(id="citrico",    nombre="Citrus Grove",     seeds=["#F2F7DF", "#9DBE4A", "#4E7A12", "#1D2D06", "#E2A63B"], acento=2),
+    dict(id="azafran",    nombre="Saffron Spice",    seeds=["#FBF3D9", "#D9B04A", "#9A6E0A", "#3A2A05", "#B5502F"], acento=2),
+    dict(id="brasa",      nombre="Ember Flame",      seeds=["#FBEFE3", "#E0894A", "#B04A14", "#3B1608", "#F2B544"], acento=2),
+    dict(id="terracota",  nombre="Terracotta Sunset",seeds=["#FAEDE6", "#D98B6A", "#A5472A", "#3A170D", "#E0B15A"], acento=2),
+    dict(id="camello",    nombre="Camel Leather",    seeds=["#F6EFE2", "#BFA27A", "#7C5A2E", "#2E200F", "#C98B3A"], acento=2),
 ]
 
 # ----------------------------------------------------------------- color
